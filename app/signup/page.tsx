@@ -229,7 +229,7 @@ export default function EmailLogin() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 relative z-10 pt-28">
+      <main className="flex-1 relative z-10 pt-10">
         <div className="min-h-screen flex items-center justify-center px-4">
           <motion.div
             className="w-full max-w-md"

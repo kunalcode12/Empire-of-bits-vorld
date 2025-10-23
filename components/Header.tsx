@@ -24,6 +24,7 @@ import { AnimatedButton } from "./animated-button";
 import RetroWelcomePopup from "./retroWelcomePopup";
 import { useSolanaWallet } from "@/components/solana-wallet-provider";
 import { pointsService } from "@/services/points-service";
+import { VorldAuthService } from "..//lib/authservice";
 
 interface HeaderProps {
   userPoints?: number;
@@ -51,6 +52,7 @@ export default function Header({
   const [activeNavItem, setActiveNavItem] = useState("home");
   const [isHoveringLogo, setIsHoveringLogo] = useState(false);
   const [showPointsTooltip, setShowPointsTooltip] = useState(false);
+  const authService = new VorldAuthService();
 
   const {
     walletAddress,
@@ -364,6 +366,25 @@ export default function Header({
       setIsProcessing(false);
       setShowSellDialog(false);
     }
+  };
+
+  const checkAuthentication = async (intendedHref: string) => {
+    try {
+    
+      const profile = await authService.getProfile();
+      console.log("profile:", profile);
+      
+      if (profile.success) {
+        // User is authenticated, navigate to intended page
+        window.location.href = intendedHref;
+      } else {
+        // User is not authenticated, redirect to signup
+        window.location.href = "/signup";
+      }
+    } catch (error) {
+      console.error("Authentication check failed:", error);
+      window.location.href = "/signup";
+    } 
   };
 
   const navItems = [
@@ -765,45 +786,51 @@ export default function Header({
 
             {/* Navigation bar - desktop */}
             <nav className="hidden md:block">
-              <div className="flex justify-center">
-                <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
-                  <ul className="flex space-x-1 relative">
-                    {navItems.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                            activeNavItem === item.name
-                              ? "text-white"
-                              : "text-foreground/70 hover:text-foreground"
-                          }`}
-                          onMouseEnter={() => playSound("hover")}
-                          onClick={() => {
-                            setActiveNavItem(item.name);
-                            playSound("click");
-                          }}
-                        >
-                          {activeNavItem === item.name && (
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
-                              layoutId="activeNavBackground"
-                              initial={false}
-                              transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 30,
-                              }}
-                            />
-                          )}
-                          {item.icon}
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </nav>
+  <div className="flex justify-center">
+    <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
+      <ul className="flex space-x-1 relative">
+        {navItems.map((item) => (
+          <li key={item.name}>
+            <Link
+              href={item.href}
+              className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                activeNavItem === item.name
+                  ? "text-white"
+                  : "text-foreground/70 hover:text-foreground"
+              }`}
+              onMouseEnter={() => playSound("hover")}
+              onClick={(e) => {
+                // Check if navigation requires authentication
+                if (item.name === "profile" || item.name === "games") {
+                  e.preventDefault(); // Prevent default navigation
+                  checkAuthentication(item.href);
+                } else {
+                  setActiveNavItem(item.name);
+                  playSound("click");
+                }
+              }}
+            >
+              {activeNavItem === item.name && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
+                  layoutId="activeNavBackground"
+                  initial={false}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                />
+              )}
+              {item.icon}
+              <span className="font-medium">{item.label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</nav>
           </div>
         </div>
 
