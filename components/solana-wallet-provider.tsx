@@ -206,6 +206,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       // Clear stored data
       setWalletAddress(null);
       localStorage.removeItem("walletAddress");
+      localStorage.removeItem("authToken");
       setConnected(false);
       setSelectedWallet(null);
       setBalance("0.00");

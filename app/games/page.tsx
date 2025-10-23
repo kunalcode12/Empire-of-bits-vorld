@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   Gamepad2,
@@ -17,6 +18,10 @@ import {
   X,
   Menu,
   AlertTriangle,
+  User,
+  LogOut,
+  Shield,
+  Loader2,
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import { AnimatedButton } from "@/components/animated-button";
@@ -24,6 +29,7 @@ import { ParticleButton } from "@/components/particle-button";
 import BuyPointsDialog from "@/components/buyPointsDialog";
 import SellPointsDialog from "@/components/sellPointsDialog";
 import { useToast } from "@/components/ui/use-toast";
+import { VorldAuthService } from "../../lib/authservice";
 
 export default function GamesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -43,6 +49,13 @@ export default function GamesPage() {
   const { toast } = useToast();
   const [showGameDialog, setShowGameDialog] = useState(false);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  const authService = new VorldAuthService();
+  const router = useRouter();
 
   const categories = [
     "All",
@@ -272,6 +285,13 @@ export default function GamesPage() {
 
   const handlePlayGame = async (game: Game): Promise<void> => {
     try {
+      // Check authentication first
+      if (!isAuthenticated) {
+        setShowAuthModal(true);
+        playSound("error");
+        return;
+      }
+
       if (points < game.pointsRequired) {
         toast({
           title: "Insufficient Points",
@@ -326,8 +346,48 @@ export default function GamesPage() {
   };
 
   useEffect(() => {
-    fetchUserPoints();
+    checkAuthentication();
   }, []);
+
+  const checkAuthentication = async () => {
+    try {
+      setLoading(true);
+      const profile = await authService.getProfile();
+      console.log("profile:", profile);
+      if (profile.success) {
+        setUserProfile(profile.data.data.profile);
+        setIsAuthenticated(true);
+        // Fetch user points after authentication
+        await fetchUserPoints();
+      } else {
+        setIsAuthenticated(false);
+        setUserProfile(null);
+      }
+    } catch (error) {
+      console.error("Authentication check failed:", error);
+      setIsAuthenticated(false);
+      setUserProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+    setUserProfile(null);
+    setPoints(0);
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+      duration: 3000,
+    });
+    playSound("success");
+  };
+
+  const handleSignIn = () => {
+    router.push("/signup");
+  };
 
   const handleBuyPoints = async (amount: number) => {
     try {
@@ -506,69 +566,92 @@ export default function GamesPage() {
             GAMES
           </h1>
 
-          {/* Wallet Section */}
+          {/* User Profile Section */}
           <div className="flex items-center gap-4 h-28">
-            {/* Points Display and Buttons */}
-            <div className="hidden md:flex items-center gap-2 bg-gray-900 p-2 border-3 border-white rounded-lg">
-              <div className="flex items-center">
-                <div className="flex items-center mr-3">
-                  <Image
-                    src="/images/cryptoCoin1.png"
-                    width={24}
-                    height={24}
-                    alt="Points"
-                    className="mr-1"
-                  />
-                  <span className="text-base font-bold">{points}</span>
-                </div>
-
-                {/* <div className="flex space-x-2">
-                  <motion.button
-                    className="px-3 py-1 bg-green-600 text-white text-sm font-bold rounded-md"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setShowBuyDialog(true);
-                      playSound("click");
-                    }}
-                    onMouseEnter={() => playSound("hover")}
-                  >
-                    BUY
-                  </motion.button>
-
-                  <motion.button
-                    className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setShowSellDialog(true);
-                      playSound("click");
-                    }}
-                    onMouseEnter={() => playSound("hover")}
-                  >
-                    SELL
-                  </motion.button>
-                </div> */}
-              </div>
+  {loading ? (
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
+        <Loader2 className="h-6 w-6 text-white animate-spin" />
+      </div>
+    </div>
+  ) : (
+    <>
+      {isAuthenticated && userProfile ? (
+        <div className="hidden md:flex items-center gap-4 bg-gray-900 p-3 border-3 border-white rounded-lg">
+          {/* User Info */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
+              <User className="h-6 w-6 text-white" />
             </div>
-
-            {/* Mobile menu button */}
-            <motion.button
-              className="md:hidden arcade-btn-large p-3 border-3 border-white"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setMenuOpen(!menuOpen);
-                playSound("click");
-              }}
-            >
-              {menuOpen ? (
-                <X className="h-7 w-7" />
-              ) : (
-                <Menu className="h-7 w-7" />
-              )}
-            </motion.button>
+            <div>
+              <div className="text-sm font-bold text-white">
+                {userProfile.email || "User"}
+              </div>
+              <div className="text-xs text-gray-400">VORLD USER</div>
+            </div>
           </div>
+          
+          {/* Points Display */}
+          <div className="flex items-center gap-2 border-l-2 border-white/20 pl-4">
+            <Image
+              src="/images/cryptoCoin1.png"
+              width={24}
+              height={24}
+              alt="Points"
+              className="mr-1"
+            />
+            <span className="text-base font-bold text-[hsl(var(--accent-yellow))]">{points}</span>
+          </div>
+          
+          {/* Logout Button */}
+          <motion.button
+            className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              handleLogout();
+              playSound("click");
+            }}
+            onMouseEnter={() => playSound("hover")}
+          >
+            <LogOut className="h-4 w-4" />
+          </motion.button>
+        </div>
+      ) : (
+        <div className="hidden md:flex items-center gap-4">
+          <AnimatedButton
+            className="bg-[hsl(var(--accent-purple))] text-white px-6 py-3 text-lg font-bold border-3 border-[hsl(var(--accent-purple)/0.7)]"
+            onClick={() => {
+              handleSignIn();
+              playSound("click");
+            }}
+            onHover={() => playSound("hover")}
+          >
+            <Shield className="mr-2 h-5 w-5" />
+            SIGN IN WITH VORLD
+          </AnimatedButton>
+        </div>
+      )}
+      
+      {/* Mobile menu button */}
+      <motion.button
+        className="md:hidden arcade-btn-large p-3 border-3 border-white"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => {
+          setMenuOpen(!menuOpen);
+          playSound("click");
+        }}
+      >
+        {menuOpen ? (
+          <X className="h-7 w-7" />
+        ) : (
+          <Menu className="h-7 w-7" />
+        )}
+      </motion.button>
+    </>
+  )}
+</div>
         </div>
 
         {/* Mobile menu */}
@@ -582,46 +665,94 @@ export default function GamesPage() {
             >
               <nav className="p-4">
                 <ul className="space-y-4">
-                  {/* Points for mobile */}
-                  <li className="py-2">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center">
-                        <Image
-                          src="/token.png"
-                          width={24}
-                          height={24}
-                          alt="Points"
-                          className="mr-2"
-                        />
-                        <span className="text-base font-bold">
-                          POINTS: {points}
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          className="px-3 py-1 bg-green-600 text-white text-sm font-bold rounded-md w-full"
-                          onClick={() => {
-                            setShowBuyDialog(true);
-                            setMenuOpen(false);
-                            playSound("click");
-                          }}
-                        >
-                          BUY POINTS
-                        </button>
+                  {isAuthenticated && userProfile ? (
+                    <>
+                      {/* User Profile for mobile */}
+                      <li className="py-2">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
+                            <User className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-white">
+                              {userProfile.email || "User"}
+                            </div>
+                            <div className="text-xs text-gray-400">VORLD USER</div>
+                          </div>
+                        </div>
+                      </li>
 
+                      {/* Points for mobile */}
+                      <li className="py-2">
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center">
+                            <Image
+                              src="/images/cryptoCoin1.png"
+                              width={24}
+                              height={24}
+                              alt="Points"
+                              className="mr-2"
+                            />
+                            <span className="text-base font-bold">
+                              POINTS: {points}
+                            </span>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
+                              className="px-3 py-1 bg-green-600 text-white text-sm font-bold rounded-md w-full"
+                              onClick={() => {
+                                setShowBuyDialog(true);
+                                setMenuOpen(false);
+                                playSound("click");
+                              }}
+                            >
+                              BUY POINTS
+                            </button>
+
+                            <button
+                              className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md w-full"
+                              onClick={() => {
+                                setShowSellDialog(true);
+                                setMenuOpen(false);
+                                playSound("click");
+                              }}
+                            >
+                              SELL POINTS
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+
+                      {/* Logout for mobile */}
+                      <li className="py-2">
                         <button
-                          className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md w-full"
+                          className="w-full px-3 py-2 bg-red-600 text-white text-sm font-bold rounded-md flex items-center justify-center"
                           onClick={() => {
-                            setShowSellDialog(true);
+                            handleLogout();
                             setMenuOpen(false);
                             playSound("click");
                           }}
                         >
-                          SELL POINTS
+                          <LogOut className="mr-2 h-4 w-4" />
+                          LOGOUT
                         </button>
-                      </div>
-                    </div>
-                  </li>
+                      </li>
+                    </>
+                  ) : (
+                    <li className="py-2">
+                      <button
+                        className="w-full px-3 py-2 bg-[hsl(var(--accent-purple))] text-white text-sm font-bold rounded-md flex items-center justify-center"
+                        onClick={() => {
+                          handleSignIn();
+                          setMenuOpen(false);
+                          playSound("click");
+                        }}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        SIGN IN WITH VORLD
+                      </button>
+                    </li>
+                  )}
                 </ul>
               </nav>
             </motion.div>
@@ -1092,6 +1223,111 @@ export default function GamesPage() {
         onSell={handleSellPoints}
         currentPoints={points}
       />
+
+      {/* Authentication Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-gray-900 border-4 border-white p-8 max-w-md w-full relative mx-auto my-auto"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "linear-gradient(to bottom, #1a1a1a, #000000)",
+                boxShadow:
+                  "0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 0, 255, 0.1)",
+              }}
+            >
+              {/* Close button */}
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                onClick={() => {
+                  setShowAuthModal(false);
+                  playSound("click");
+                }}
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              {/* CRT scanline effect for the dialog */}
+              <div className="absolute inset-0 bg-[url('/scanlines.png')] opacity-20 pointer-events-none"></div>
+              <div className="absolute inset-0 crt-effect pointer-events-none"></div>
+
+              {/* Title with glitch effect */}
+              <div className="text-center mb-6 relative z-10">
+                <Shield className="h-16 w-16 mx-auto mb-4 text-[hsl(var(--accent-yellow))]" />
+                <h2
+                  className="text-3xl font-bold glitch-text"
+                  data-text="AUTHENTICATION REQUIRED"
+                >
+                  AUTHENTICATION REQUIRED
+                </h2>
+                <p className="text-lg text-gray-300 mt-2">
+                  You need to sign in with Vorld to play games
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-6 mb-8 relative z-10">
+                <div className="bg-black/50 border-2 border-white p-4 text-center">
+                  <div className="text-sm text-gray-400 mb-2">ACCESS LEVEL</div>
+                  <div className="text-2xl font-bold text-[hsl(var(--accent-yellow))]">
+                    VORLD USER REQUIRED
+                  </div>
+                </div>
+
+                <div className="text-center text-gray-300">
+                  <p className="mb-4">
+                    Sign in with your Vorld account to access the gaming platform and start earning points.
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <Shield className="h-4 w-4 text-[hsl(var(--accent-green))]" />
+                    <span>Secure authentication</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="grid grid-cols-2 gap-3 relative z-10">
+                <AnimatedButton
+                  className="arcade-btn-outline border-2 py-3 px-4 text-base font-bold"
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    playSound("click");
+                  }}
+                  onHover={() => playSound("hover")}
+                >
+                  CANCEL
+                </AnimatedButton>
+
+                <AnimatedButton
+                  className="arcade-btn bg-[hsl(var(--accent-purple))] border-2 border-[hsl(var(--accent-purple)/0.7)] py-3 px-4 text-base font-bold text-white"
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    handleSignIn();
+                    playSound("click");
+                  }}
+                  onHover={() => playSound("hover")}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  SIGN IN
+                </AnimatedButton>
+              </div>
+
+              {/* Bottom note */}
+              <p className="text-xs text-gray-500 mt-4 text-center relative z-10">
+                Vorld authentication is required to access gaming features
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="bg-black border-t-4 border-white py-10 px-4 mt-16 relative z-20">

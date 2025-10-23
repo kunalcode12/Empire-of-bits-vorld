@@ -258,24 +258,18 @@ export default function Home() {
     }
   };
 
-  // useEffect(() => {
-  //   if (walletConnected) {
-  //     console.log("Wallet connected, fetching points...");
-  //     fetchUserPoints();
-  //   }
-  // }, [walletConnected]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const user = await authService.getProfile();
-        console.log("profile:", user);
-        // handle user if needed
-      } catch (err) {
-        console.error("Failed to fetch profile", err);
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const user = await authService.getProfile();
+  //       console.log("profile:", user);
+  //       // handle user if needed
+  //     } catch (err) {
+  //       console.error("Failed to fetch profile", err);
+  //     }
+  //   })();
+  // }, []);
 
   // 3. Update the handleConnectWallet function to ensure proper flow
   const handleConnectWallet = async () => {
@@ -308,6 +302,25 @@ export default function Home() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePlayGamesClick = async () => {
+    try {
+      // Check if user is authenticated
+      const profile = await authService.getProfile();
+      console.log("profile:", profile);
+      if (profile.success) {
+        // User is authenticated, navigate to games
+        window.location.href = "/games";
+      } else {
+        // User not authenticated, redirect to signup
+        window.location.href = "/signup";
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      // If there's an error, redirect to signup
+      window.location.href = "/signup";
     }
   };
 
@@ -627,17 +640,18 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <Link href="/games">
-                  <ParticleButton
-                    className="bg-[hsl(var(--accent-purple))] text-white px-12 py-5 text-2xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group"
-                    onClick={() => playSound("click")}
-                  >
-                    <span className="relative z-10 flex items-center">
-                      PLAY GAMES
-                      <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
-                    </span>
-                  </ParticleButton>
-                </Link>
+                <ParticleButton
+                  className="bg-[hsl(var(--accent-purple))] text-white px-12 py-5 text-2xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group"
+                  onClick={() => {
+                    playSound("click");
+                    handlePlayGamesClick();
+                  }}
+                >
+                  <span className="relative z-10 flex items-center">
+                    PLAY GAMES
+                    <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                  </span>
+                </ParticleButton>
                 {/* Pixel effect on hover */}
                 {isHovering === "games" && (
                   <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-yellow))]"></div>
