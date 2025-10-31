@@ -55,15 +55,12 @@ Our innovative vesting mechanism keeps players engaged long-term with escalating
 
 ## 🎮 Our Games
 
-| Game                            | Status      | Link                                                  | Description                                             |
-| ------------------------------- | ----------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| Candy Crush & Arcade Collection | Live MVP    | [Play Now](https://www.empireofbits.fun/games)        | Classic arcade games reimagined with blockchain rewards |
-| Battleship                      | Live MVP    | [Play Now](https://battleship.empireofbits.fun/)      | Strategic naval warfare with P2E mechanics              |
-| Platformer                      | Live MVP    | [Play Now](https://platformer-game-delta.vercel.app/) | Side-scrolling adventure with token rewards             |
-| Car Racing                      | Development | [Preview](https://car.empireofbits.fun/)              | High-octane racing with NFT vehicles                    |
-| Axe Arcade                      | Live MVP    | [Play Now](https://axes.empireofbits.fun/)            | Skill-based throwing game with leaderboards             |
-| Space Invaders                  | Live MVP    | [Play Now](https://spaceinvader.empireofbits.fun/)    | Classic alien shooter reborn in 3D with BabylonJS       |
-|  |
+| Game                            | Status   | Link                                               | Description                                             |
+| ------------------------------- | -------- | -------------------------------------------------- | ------------------------------------------------------- |
+| Candy Crush & Arcade Collection | Live MVP | [Play Now](https://www.empireofbits.fun/games)     | Classic arcade games reimagined with blockchain rewards |
+| Battleship                      | Live MVP | [Play Now](https://battleship.empireofbits.fun/)   | Strategic naval warfare with P2E mechanics              |
+| Axe Arcade                      | Live MVP | [Play Now](https://axes.empireofbits.fun/)         | Skill-based throwing game with leaderboards             |
+| Space Invaders                  | Live MVP | [Play Now](https://spaceinvader.empireofbits.fun/) | Classic alien shooter reborn in 3D with BabylonJS       |
 
 <p align="center">
   <a href="https://x.com/empireofbits/status/1914243333301346640">
@@ -155,8 +152,6 @@ Our codebase is open for review:
 
 - [Vesting Mechanism](https://github.com/empireofbits/vest-main)
 - [Token Implementation](https://github.com/empireofbits/cnf-main)
-- [Car Racing Game](https://github.com/empireofbits/Car)
-- [Platformer Game](https://github.com/empireofbits/platformer)
 - [Space Invaders](https://github.com/empireofbits/space-Invaders)
 - [Battleship Game](https://github.com/empireofbits/battle-ship)
 - [Axe Arcade](https://github.com/empireofbits/empireOfAxes)
