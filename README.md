@@ -122,6 +122,25 @@ Our innovative vesting system allows players to lock their tokens for predetermi
 - _Smart Contracts_: Rust, Anchor Framework
 - _Infrastructure_: Vercel, AWS
 - _Integrations_: Magickblocks, Sonic
+- _Real-time Multiplayer_: [Vorld API](https://access.thevorld.com/) - Arena Arcade integration for streaming and live viewer interactions
+
+### Vorld Integration
+
+We've integrated the Vorld Arena Arcade API to enable real-time multiplayer gaming experiences with live streaming integration. This allows viewers to interact with games in real-time, boost players, and drop packages during gameplay.
+
+#### Key Features
+
+- **Real-time WebSocket Communication**: Bidirectional WebSocket connections for instant game updates
+- **Streaming Integration**: Connect games to streaming platforms (Twitch, YouTube, etc.)
+- **Boost System**: Viewers can support their favorite players using Arena coins
+- **Package Drops**: Faction-specific items and rewards based on viewer engagement
+- **Player Management**: Custom players, events, and game configurations
+- **Multi-cycle Gameplay**: Dynamic boost cycles with progressive rewards
+
+#### Resources
+
+- _API Documentation_: [Vorld API Docs](https://access.thevorld.com/)
+- _Arena Portal_: [Viewer & Streamer Interface](https://arena-ioa-frontend.vercel.app/)
 
 ## 👥 Team
 
