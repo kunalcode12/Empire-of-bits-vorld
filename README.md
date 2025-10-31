@@ -145,6 +145,7 @@ Led by a passionate team of blockchain enthusiasts and gaming veterans with expe
 
 - _Kunal_ - Founder & Lead Developer
   - [GitHub](https://github.com/kunalcode12)
+  - [twitter](https://x.com/KunalSharm89327)
 
 ## 📂 Repositories
 
