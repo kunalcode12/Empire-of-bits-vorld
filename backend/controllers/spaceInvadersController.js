@@ -13,7 +13,7 @@ const initializeGame = async (req, res, next) => {
     if (!user) {
       return next(new ErrorResponse(`User not found with id ${userId}`, 404));
     }
-
+    console.log('User found:', user);
     // Check if game already exists for user
     let game = await SpaceInvaders.findOne({ userId });
 

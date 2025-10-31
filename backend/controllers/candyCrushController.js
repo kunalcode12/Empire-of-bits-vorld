@@ -1,4 +1,4 @@
-const CandyCrush = require('../models/CandyCrush');  // Make sure this matches your filename exactly
+const CandyCrush = require('../models/CandyCrush'); // Make sure this matches your filename exactly
 const User = require('../models/User');
 const { ErrorResponse } = require('../utils/errorHandler');
 const mongoose = require('mongoose');
@@ -13,7 +13,7 @@ const initializeGame = async (req, res, next) => {
     if (!user) {
       return next(new ErrorResponse(`User not found with id ${userId}`, 404));
     }
-    
+
     // Check if game already exists for user
     let game = await CandyCrush.findOne({ userId });
 
@@ -46,7 +46,7 @@ const initializeGame = async (req, res, next) => {
 
     // Add game reference to user
     user.games.push({
-      gameType: 'candycrush',
+      gameType: 'CandyCrush',
       gameId: game._id,
     });
 

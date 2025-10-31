@@ -30,6 +30,7 @@ import BuyPointsDialog from "@/components/buyPointsDialog";
 import SellPointsDialog from "@/components/sellPointsDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { VorldAuthService } from "../../lib/authservice";
+import { ArenaGameService, type GameState } from "@/lib/arenaGameService";
 
 export default function GamesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -53,9 +54,15 @@ export default function GamesPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const authService = new VorldAuthService();
   const router = useRouter();
+  const arenaServiceRef = useRef<ArenaGameService | null>(null);
+  const [arenaGameState, setArenaGameState] = useState<GameState | null>(null);
+  const [arenaInitializing, setArenaInitializing] = useState(false);
+  const [arenaInitMessage, setArenaInitMessage] = useState(
+    "INITIALIZING ARENA..."
+  );
 
   const categories = [
     "All",
@@ -90,7 +97,7 @@ export default function GamesPage() {
       prize: 0.15,
       players: 2,
       status: "live",
-      route: "https://battleship.empireofbits.fun/",
+      route: "http://localhost:4000/",
     },
     {
       id: 3,
@@ -102,7 +109,7 @@ export default function GamesPage() {
       prize: 0.12,
       players: 1,
       status: "waiting",
-      route: "https://spaceinvader.empireofbits.fun/",
+      route: "http://localhost:4001/",
     },
     {
       id: 4,
@@ -126,7 +133,7 @@ export default function GamesPage() {
       prize: 0.3,
       players: 3,
       status: "live",
-      route: "https://axes.empireofbits.fun/",
+      route: "http://localhost:5173/",
     },
     {
       id: 78,
@@ -331,7 +338,13 @@ export default function GamesPage() {
       if (game.title === "Candy Crush") {
         window.location.href = game.route;
       } else {
-        window.open(game.route + "?wallet=" + walletAddress, "_blank");
+        const wallet = walletAddress || "";
+        const authToken = localStorage.getItem("authToken") || "";
+
+        const url = `${game.route}?wallet=${encodeURIComponent(
+          wallet
+        )}&authToken=${encodeURIComponent(authToken)}`;
+        window.open(url, "_blank");
       }
     } catch (error) {
       console.error("Error playing game:", error);
@@ -347,6 +360,11 @@ export default function GamesPage() {
 
   useEffect(() => {
     checkAuthentication();
+    arenaServiceRef.current = new ArenaGameService();
+    return () => {
+      arenaServiceRef.current?.disconnect();
+      arenaServiceRef.current = null;
+    };
   }, []);
 
   const checkAuthentication = async () => {
@@ -475,6 +493,83 @@ export default function GamesPage() {
     }
   };
 
+  const handlePlayWithVorld = async (game: Game) => {
+    try {
+      // Require authentication
+      if (!isAuthenticated) {
+        setShowAuthModal(true);
+        playSound("error");
+        return;
+      }
+
+      const arena = arenaServiceRef.current;
+      if (!arena) return;
+
+      // Show loading screen
+      setArenaInitializing(true);
+      setArenaInitMessage("INITIALIZING ARENA...");
+
+      const token =
+        (typeof window !== "undefined" && localStorage.getItem("authToken")) ||
+        (typeof window !== "undefined" && localStorage.getItem("token")) ||
+        "";
+
+      // Provide a default stream URL. In production, let streamer configure per game.
+      const streamUrl = "https://twitch.tv/your_channel_name";
+
+      // Simulate progress updates
+      setTimeout(() => {
+        setArenaInitMessage("CONNECTING TO ARENA SERVER...");
+      }, 800);
+
+      setTimeout(() => {
+        setArenaInitMessage("ESTABLISHING WEBSOCKET...");
+      }, 1600);
+
+      const result = await arena.initializeGame(streamUrl, token);
+
+      if (result.success && result.data) {
+        setArenaInitMessage("ARENA READY!");
+        setArenaGameState(result.data);
+
+        // Show success message briefly before navigating
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        setArenaInitializing(false);
+
+        toast({
+          title: "Arena Initialized",
+          description: `Game ID: ${result.data.gameId}`,
+          duration: 3500,
+        });
+        playSound("success");
+
+        // Optional: for Candy Crush, navigate to levels page if not already going
+        if (game.title === "Candy Crush") {
+          router.push("/levels-candycrush");
+        }
+      } else {
+        setArenaInitializing(false);
+        toast({
+          title: "Initialization Failed",
+          description: result.error || "Unable to initialize Arena game",
+          variant: "destructive",
+          duration: 3500,
+        });
+        playSound("error");
+      }
+    } catch (e: any) {
+      setArenaInitializing(false);
+      toast({
+        title: "Initialization Error",
+        description: e?.message || "Failed to initialize Arena game",
+        variant: "destructive",
+        duration: 3500,
+      });
+      playSound("error");
+    }
+  };
+
   const handleConnectWallet = () => {
     // Simulate wallet connection
     setShowWalletModal(false);
@@ -568,90 +663,92 @@ export default function GamesPage() {
 
           {/* User Profile Section */}
           <div className="flex items-center gap-4 h-28">
-  {loading ? (
-    <div className="flex items-center gap-4">
-      <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 text-white animate-spin" />
-      </div>
-    </div>
-  ) : (
-    <>
-      {isAuthenticated && userProfile ? (
-        <div className="hidden md:flex items-center gap-4 bg-gray-900 p-3 border-3 border-white rounded-lg">
-          {/* User Info */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
-              <User className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-white">
-                {userProfile.email || "User"}
+            {loading ? (
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                </div>
               </div>
-              <div className="text-xs text-gray-400">VORLD USER</div>
-            </div>
+            ) : (
+              <>
+                {isAuthenticated && userProfile ? (
+                  <div className="hidden md:flex items-center gap-4 bg-gray-900 p-3 border-3 border-white rounded-lg">
+                    {/* User Info */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[hsl(var(--accent-purple))] rounded-full flex items-center justify-center">
+                        <User className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">
+                          {userProfile.email || "User"}
+                        </div>
+                        <div className="text-xs text-gray-400">VORLD USER</div>
+                      </div>
+                    </div>
+
+                    {/* Points Display */}
+                    <div className="flex items-center gap-2 border-l-2 border-white/20 pl-4">
+                      <Image
+                        src="/images/cryptoCoin1.png"
+                        width={24}
+                        height={24}
+                        alt="Points"
+                        className="mr-1"
+                      />
+                      <span className="text-base font-bold text-[hsl(var(--accent-yellow))]">
+                        {points}
+                      </span>
+                    </div>
+
+                    {/* Logout Button */}
+                    <motion.button
+                      className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        handleLogout();
+                        playSound("click");
+                      }}
+                      onMouseEnter={() => playSound("hover")}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </motion.button>
+                  </div>
+                ) : (
+                  <div className="hidden md:flex items-center gap-4">
+                    <AnimatedButton
+                      className="bg-[hsl(var(--accent-purple))] text-white px-6 py-3 text-lg font-bold border-3 border-[hsl(var(--accent-purple)/0.7)]"
+                      onClick={() => {
+                        handleSignIn();
+                        playSound("click");
+                      }}
+                      onHover={() => playSound("hover")}
+                    >
+                      <Shield className="mr-2 h-5 w-5" />
+                      SIGN IN WITH VORLD
+                    </AnimatedButton>
+                  </div>
+                )}
+
+                {/* Mobile menu button */}
+                <motion.button
+                  className="md:hidden arcade-btn-large p-3 border-3 border-white"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setMenuOpen(!menuOpen);
+                    playSound("click");
+                  }}
+                >
+                  {menuOpen ? (
+                    <X className="h-7 w-7" />
+                  ) : (
+                    <Menu className="h-7 w-7" />
+                  )}
+                </motion.button>
+              </>
+            )}
           </div>
-          
-          {/* Points Display */}
-          <div className="flex items-center gap-2 border-l-2 border-white/20 pl-4">
-            <Image
-              src="/images/cryptoCoin1.png"
-              width={24}
-              height={24}
-              alt="Points"
-              className="mr-1"
-            />
-            <span className="text-base font-bold text-[hsl(var(--accent-yellow))]">{points}</span>
-          </div>
-          
-          {/* Logout Button */}
-          <motion.button
-            className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              handleLogout();
-              playSound("click");
-            }}
-            onMouseEnter={() => playSound("hover")}
-          >
-            <LogOut className="h-4 w-4" />
-          </motion.button>
-        </div>
-      ) : (
-        <div className="hidden md:flex items-center gap-4">
-          <AnimatedButton
-            className="bg-[hsl(var(--accent-purple))] text-white px-6 py-3 text-lg font-bold border-3 border-[hsl(var(--accent-purple)/0.7)]"
-            onClick={() => {
-              handleSignIn();
-              playSound("click");
-            }}
-            onHover={() => playSound("hover")}
-          >
-            <Shield className="mr-2 h-5 w-5" />
-            SIGN IN WITH VORLD
-          </AnimatedButton>
-        </div>
-      )}
-      
-      {/* Mobile menu button */}
-      <motion.button
-        className="md:hidden arcade-btn-large p-3 border-3 border-white"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => {
-          setMenuOpen(!menuOpen);
-          playSound("click");
-        }}
-      >
-        {menuOpen ? (
-          <X className="h-7 w-7" />
-        ) : (
-          <Menu className="h-7 w-7" />
-        )}
-      </motion.button>
-    </>
-  )}
-</div>
         </div>
 
         {/* Mobile menu */}
@@ -677,7 +774,9 @@ export default function GamesPage() {
                             <div className="text-sm font-bold text-white">
                               {userProfile.email || "User"}
                             </div>
-                            <div className="text-xs text-gray-400">VORLD USER</div>
+                            <div className="text-xs text-gray-400">
+                              VORLD USER
+                            </div>
                           </div>
                         </div>
                       </li>
@@ -1199,6 +1298,20 @@ export default function GamesPage() {
                 </AnimatedButton>
               </div>
 
+              {/* Vorld Arena initialization */}
+              <div className="mt-3">
+                <AnimatedButton
+                  className="w-full arcade-btn bg-blue-600 border-2 border-blue-500 text-white py-3 px-4 text-base font-bold"
+                  onClick={() => {
+                    handlePlayWithVorld(selectedGame);
+                    playSound("click");
+                  }}
+                  onHover={() => playSound("hover")}
+                >
+                  PLAY WITH VORLD
+                </AnimatedButton>
+              </div>
+
               {/* Bottom note */}
               <p className="text-xs text-gray-500 mt-4 text-center">
                 {selectedGame.pointsRequired} points will be deducted from your
@@ -1284,7 +1397,8 @@ export default function GamesPage() {
 
                 <div className="text-center text-gray-300">
                   <p className="mb-4">
-                    Sign in with your Vorld account to access the gaming platform and start earning points.
+                    Sign in with your Vorld account to access the gaming
+                    platform and start earning points.
                   </p>
                   <div className="flex items-center justify-center gap-2 text-sm">
                     <Shield className="h-4 w-4 text-[hsl(var(--accent-green))]" />
@@ -1325,6 +1439,137 @@ export default function GamesPage() {
                 Vorld authentication is required to access gaming features
               </p>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Arena Initialization Loader */}
+      <AnimatePresence>
+        {arenaInitializing && (
+          <motion.div
+            className="fixed inset-0 bg-black z-[100] flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* CRT and scanline effects */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-0 bg-[url('/scanlines.png')] opacity-30"></div>
+              <div className="absolute inset-0 crt-effect"></div>
+              <div
+                className="absolute inset-0 opacity-10"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(#ffffff22 1px, transparent 1px), linear-gradient(90deg, #ffffff22 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
+                }}
+              ></div>
+            </div>
+
+            {/* Main content */}
+            <div className="relative z-10 text-center">
+              {/* Animated spinner */}
+              <motion.div
+                className="mx-auto mb-8"
+                initial={{ scale: 0, rotate: 0 }}
+                animate={{ scale: 1, rotate: 360 }}
+                transition={{
+                  rotate: {
+                    repeat: Infinity,
+                    duration: 2,
+                    ease: "linear",
+                  },
+                  scale: {
+                    duration: 0.5,
+                  },
+                }}
+              >
+                <div className="relative w-32 h-32 mx-auto">
+                  {/* Outer ring */}
+                  <div className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                  {/* Inner ring */}
+                  <motion.div
+                    className="absolute inset-4 border-4 border-purple-500 rounded-full border-b-transparent"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      rotate: {
+                        repeat: Infinity,
+                        duration: 1.5,
+                        ease: "linear",
+                        repeatType: "reverse",
+                      },
+                    }}
+                  ></motion.div>
+                  {/* Center glow */}
+                  <div className="absolute inset-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full animate-pulse"></div>
+                </div>
+              </motion.div>
+
+              {/* Glitch text effect */}
+              <motion.h2
+                className="text-5xl md:text-6xl font-bold mb-6 glitch-text-sm"
+                data-text={arenaInitMessage}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                key={arenaInitMessage}
+                transition={{ duration: 0.3 }}
+                style={{
+                  textShadow:
+                    "0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(147, 51, 234, 0.5), 2px 2px 0px #00ffff, -2px -2px 0px #9333ea",
+                }}
+              >
+                {arenaInitMessage}
+              </motion.h2>
+
+              {/* Progress dots */}
+              <motion.div
+                className="flex justify-center gap-2 mt-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-3 h-3 bg-blue-400 rounded-full"
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </motion.div>
+
+              {/* Particle effects */}
+              <div className="absolute inset-0 pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 bg-blue-400 rounded-full"
+                    initial={{
+                      x: "50%",
+                      y: "50%",
+                      opacity: 0,
+                    }}
+                    animate={{
+                      x: `${50 + (Math.random() - 0.5) * 100}%`,
+                      y: `${50 + (Math.random() - 0.5) * 100}%`,
+                      opacity: [0, 1, 0],
+                    }}
+                    transition={{
+                      duration: 2 + Math.random() * 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 2,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

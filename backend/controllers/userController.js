@@ -70,6 +70,8 @@ const updateUserPoints = async (req, res, next) => {
       return next(new ErrorResponse(`User not found with id ${userId}`, 404));
     }
 
+    console.log(user);
+
     // Update points based on operation
     if (operation === 'add') {
       user.points += points;
@@ -154,6 +156,7 @@ const getUserGames = async (req, res, next) => {
       games: allGames,
     });
   } catch (error) {
+    console.error('Error fetching user games:', error);
     next(error);
   }
 };

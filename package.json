@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "redis:start": "docker-compose up -d",
+    "redis:stop": "docker-compose down",
     "build": "next build",
     "start": "next start",
     "export": "next export",
