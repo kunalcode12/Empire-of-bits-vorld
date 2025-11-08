@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAudio } from "@/hooks/use-audio";
 
 // Candy types
@@ -18,12 +18,24 @@ interface GameBoardProps {
   level: number;
   onScoreUpdate: (points: number) => void;
   onMoveComplete: () => void;
+  specialEffect?: {
+    type: "colour_bomb" | "striped" | "wrapped";
+    targetColor?: string;
+  } | null;
+  onSpecialEffectComplete?: () => void;
+  automaticMoves?: {
+    count: number;
+    onComplete?: () => void;
+  } | null;
 }
 
 export default function GameBoard({
   level,
   onScoreUpdate,
   onMoveComplete,
+  specialEffect,
+  onSpecialEffectComplete,
+  automaticMoves,
 }: GameBoardProps) {
   const BOARD_SIZE = 8;
   const [board, setBoard] = useState<string[][]>([]);
@@ -40,7 +52,13 @@ export default function GameBoard({
     row: number;
     col: number;
   } | null>(null);
-  const boardRef = useRef<HTMLDivElement>(null);
+  const [showColorBombEffect, setShowColorBombEffect] = useState(false);
+  const [showAutoMoveEffect, setShowAutoMoveEffect] = useState(false);
+  const [autoMoveProgress, setAutoMoveProgress] = useState(0);
+  const boardContainerRef = useRef<HTMLDivElement>(null);
+  const effectInProgressRef = useRef(false);
+  const boardStateRef = useRef<string[][]>([]);
+  const autoMoveInProgressRef = useRef(false);
 
   const { playSound } = useAudio();
 
@@ -48,6 +66,226 @@ export default function GameBoard({
   useEffect(() => {
     initializeBoard();
   }, [level]);
+
+  // Store board in ref for latest access in async callbacks
+  useEffect(() => {
+    boardStateRef.current = board;
+  }, [board]);
+
+  // Handle automatic moves
+  useEffect(() => {
+    if (
+      automaticMoves &&
+      automaticMoves.count > 0 &&
+      board.length > 0 &&
+      !autoMoveInProgressRef.current
+    ) {
+      autoMoveInProgressRef.current = true;
+      executeAutomaticMoves(automaticMoves.count, automaticMoves.onComplete);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [automaticMoves]);
+
+  const executeAutomaticMoves = async (
+    moveCount: number,
+    onComplete?: () => void
+  ) => {
+    setShowAutoMoveEffect(true);
+    setAutoMoveProgress(0);
+
+    for (let i = 0; i < moveCount; i++) {
+      setAutoMoveProgress(i + 1);
+
+      // Get current board state
+      const currentBoard = boardStateRef.current;
+      if (currentBoard.length === 0) break;
+
+      // Find a random valid move
+      const validMoves: Array<{
+        row1: number;
+        col1: number;
+        row2: number;
+        col2: number;
+      }> = [];
+
+      // Check all possible adjacent swaps
+      for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          // Check right neighbor
+          if (col < BOARD_SIZE - 1) {
+            validMoves.push({ row1: row, col1: col, row2: row, col2: col + 1 });
+          }
+          // Check bottom neighbor
+          if (row < BOARD_SIZE - 1) {
+            validMoves.push({ row1: row, col1: col, row2: row + 1, col2: col });
+          }
+        }
+      }
+
+      if (validMoves.length === 0) break;
+
+      // Pick a random move
+      const randomMove =
+        validMoves[Math.floor(Math.random() * validMoves.length)];
+
+      // Execute the move (don't count as user move)
+      await executeAutoMove(
+        randomMove.row1,
+        randomMove.col1,
+        randomMove.row2,
+        randomMove.col2
+      );
+
+      // Wait between moves for visual effect
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+
+    setShowAutoMoveEffect(false);
+    setAutoMoveProgress(0);
+    autoMoveInProgressRef.current = false;
+
+    if (onComplete) {
+      setTimeout(() => {
+        onComplete();
+      }, 500);
+    }
+  };
+
+  const executeAutoMove = async (
+    row1: number,
+    col1: number,
+    row2: number,
+    col2: number
+  ) => {
+    const currentBoard = boardStateRef.current;
+    if (currentBoard.length === 0) return;
+
+    // Create a copy of the board
+    const newBoard = [...currentBoard.map((row) => [...row])];
+
+    // Swap the candies
+    const temp = newBoard[row1][col1];
+    newBoard[row1][col1] = newBoard[row2][col2];
+    newBoard[row2][col2] = temp;
+
+    setBoard(newBoard);
+
+    // Check if the swap created a match (but don't count as user move)
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hasMatches = await checkForMatches(newBoard, false);
+
+    if (!hasMatches) {
+      // If no matches were created, swap back
+      const revertBoard = [...newBoard.map((row) => [...row])];
+      revertBoard[row1][col1] = newBoard[row2][col2];
+      revertBoard[row2][col2] = newBoard[row1][col1];
+      setBoard(revertBoard);
+    } else {
+      // Valid move - matches will be handled by checkForMatches
+      // Don't call onMoveComplete for auto moves
+    }
+  };
+
+  // Handle special effects
+  useEffect(() => {
+    if (
+      specialEffect?.type === "colour_bomb" &&
+      board.length > 0 &&
+      !effectInProgressRef.current
+    ) {
+      effectInProgressRef.current = true;
+
+      const executeColourBomb = async () => {
+        const currentBoard = boardStateRef.current;
+        if (currentBoard.length === 0) {
+          effectInProgressRef.current = false;
+          return;
+        }
+
+        setShowColorBombEffect(true);
+        playSound("match");
+
+        // Wait for visual effect
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Find the most common color on the board
+        const colorCounts: Record<string, number> = {};
+        currentBoard.forEach((row) => {
+          row.forEach((candy) => {
+            if (candy && candy in CANDY_COLORS) {
+              colorCounts[candy] = (colorCounts[candy] || 0) + 1;
+            }
+          });
+        });
+
+        // Get the most common color
+        const targetColor =
+          Object.keys(colorCounts).length > 0
+            ? Object.entries(colorCounts).reduce((a, b) =>
+                colorCounts[a[0]] > colorCounts[b[0]] ? a : b
+              )[0]
+            : CANDY_TYPES[0];
+
+        // Find all candies of this color
+        const matchedCandies: { row: number; col: number }[] = [];
+        currentBoard.forEach((row, rowIndex) => {
+          row.forEach((candy, colIndex) => {
+            if (candy === targetColor) {
+              matchedCandies.push({ row: rowIndex, col: colIndex });
+            }
+          });
+        });
+
+        if (matchedCandies.length > 0) {
+          // Show explosion animation for all matched candies
+          setAnimations(
+            matchedCandies.map((match) => ({
+              row: match.row,
+              col: match.col,
+              type: "explode",
+            }))
+          );
+
+          // Big score bonus for colour bomb
+          const points = matchedCandies.length * 150 + 500; // Bonus points
+          onScoreUpdate(points);
+
+          // Wait for animation
+          await new Promise((resolve) => setTimeout(resolve, 600));
+
+          // Clear matched candies
+          const clearedBoard = [...currentBoard.map((row) => [...row])];
+          matchedCandies.forEach((match) => {
+            clearedBoard[match.row][match.col] = "";
+          });
+
+          setBoard(clearedBoard);
+          setAnimations([]);
+          setShowColorBombEffect(false);
+
+          // Wait for clearing animation
+          await new Promise((resolve) => setTimeout(resolve, 400));
+
+          // Drop candies and check for cascades
+          const droppedBoard = await dropCandies(clearedBoard);
+          await checkForMatches(droppedBoard, false);
+        } else {
+          setShowColorBombEffect(false);
+        }
+
+        // Notify completion
+        effectInProgressRef.current = false;
+        if (onSpecialEffectComplete) {
+          setTimeout(() => {
+            onSpecialEffectComplete();
+          }, 2000);
+        }
+      };
+
+      executeColourBomb();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [specialEffect]);
 
   const initializeBoard = async () => {
     const newBoard: string[][] = [];
@@ -371,7 +609,7 @@ export default function GameBoard({
 
   return (
     <div
-      ref={boardRef}
+      ref={boardContainerRef}
       className="grid grid-cols-8 gap-1 aspect-square relative"
       style={{
         backgroundImage:
@@ -379,6 +617,33 @@ export default function GameBoard({
         boxShadow: "inset 0 0 10px rgba(0,0,0,0.5)",
       }}
     >
+      {/* Colour Bomb Effect Overlay */}
+      {showColorBombEffect && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 via-pink-500/40 to-purple-500/40 animate-pulse" />
+          <div className="relative z-10 text-center">
+            <div className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl animate-bounce">
+              <span className="text-yellow-300">COLOUR</span>{" "}
+              <span className="text-pink-400">BOMB!</span>
+            </div>
+            <div className="mt-2 text-2xl text-yellow-200 animate-pulse">
+              💥 EXPLOSION! 💥
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Automatic Moves Effect Overlay */}
+      {showAutoMoveEffect && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <div className="bg-black/80 border-2 border-blue-400 rounded-lg px-4 py-2 shadow-2xl">
+            <div className="text-lg font-bold text-blue-300 font-pixel text-center">
+              AUTO MOVE: {autoMoveProgress}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Retro scanlines overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-10 opacity-10"
@@ -416,10 +681,11 @@ export default function GameBoard({
             onMouseUp={handleDragEnd}
             onTouchStart={() => handleDragStart(rowIndex, colIndex)}
             onTouchMove={(e) => {
-              if (!boardRef.current || !dragStart) return;
+              if (!boardContainerRef.current || !dragStart) return;
 
               const touch = e.touches[0];
-              const boardRect = boardRef.current.getBoundingClientRect();
+              const boardRect =
+                boardContainerRef.current.getBoundingClientRect();
               const cellSize = boardRect.width / BOARD_SIZE;
 
               const col = Math.floor(

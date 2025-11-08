@@ -254,6 +254,7 @@ export class ArenaGameService {
 
     // Package Events
     this.socket?.on("package_drop", (data) => {
+      console.log("Package drop:", data);
       this.onPackageDrop?.(data);
     });
 

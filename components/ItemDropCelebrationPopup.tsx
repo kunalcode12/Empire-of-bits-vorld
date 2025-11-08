@@ -1,21 +1,40 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ParticlesContainer } from "./particles-container";
+import { Gift, Zap, User, Target } from "lucide-react";
+
+interface ItemStat {
+  name: string;
+  currentValue: number;
+  maxValue: number;
+  description: string;
+}
 
 interface ItemDropCelebrationPopupProps {
   itemName: string;
   itemImage?: string;
+  purchaserUsername?: string;
+  targetPlayerName?: string;
+  stats?: ItemStat[];
+  cost?: number;
   onClose: () => void;
 }
 
-export default function ItemDropCelebrationPopup({ itemName, itemImage, onClose }: ItemDropCelebrationPopupProps) {
+export default function ItemDropCelebrationPopup({
+  itemName,
+  itemImage,
+  purchaserUsername,
+  targetPlayerName,
+  stats,
+  cost,
+  onClose,
+}: ItemDropCelebrationPopupProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 500);
-    }, 2000);
+      setTimeout(onClose, 300);
+    }, 1000); // 1 second duration
     return () => clearTimeout(timer);
   }, [onClose]);
 
@@ -23,22 +42,71 @@ export default function ItemDropCelebrationPopup({ itemName, itemImage, onClose 
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center z-[110] bg-black/80"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          className="fixed top-4 right-4 z-[100] pointer-events-none"
+          initial={{ opacity: 0, x: 100, scale: 0.8 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 100, scale: 0.8 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <ParticlesContainer />
           <motion.div
-            className="relative border-8 border-blue-400 neon-glow p-10 rounded-2xl bg-gradient-to-br from-black via-blue-800/80 to-black text-center max-w-lg w-full "
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1.1, opacity: 1 }}
-            exit={{ scale: 0.5, opacity: 0 }}
+            className="relative border-2 border-pink-400 rounded-lg bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-blue-900/95 p-3 shadow-2xl max-w-xs w-72"
+            style={{
+              boxShadow:
+                "0 0 20px rgba(236, 72, 153, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.3)",
+            }}
           >
-            <h2 className="text-3xl font-extrabold text-blue-400 font-pixel drop-shadow mb-2">ITEM DROP!</h2>
-            {itemImage && <img src={itemImage} alt={itemName} className="mx-auto mb-4 h-24 w-24 object-contain pixelated" />}
-            <div className="text-2xl md:text-3xl text-white mb-2 font-pixel animate-pulse">{itemName}</div>
-            <div className="text-yellow-300 animate-bounce mt-2">Enjoy your new item!</div>
+            {/* Header with icon */}
+            <div className="flex items-center gap-2 mb-2">
+              <Gift className="text-pink-400 animate-pulse" size={20} />
+              <h3 className="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-pixel">
+                ITEM DROP!
+              </h3>
+            </div>
+
+            {/* Item Image and Name - Compact */}
+            <div className="flex items-center gap-2 mb-2">
+              {itemImage && (
+                <img
+                  src={itemImage}
+                  alt={itemName}
+                  className="h-10 w-10 object-contain pixelated border border-yellow-400 rounded bg-black/50 p-1"
+                />
+              )}
+              <div className="flex-1">
+                <div className="text-sm font-bold text-white font-pixel truncate">
+                  {itemName}
+                </div>
+                {purchaserUsername && (
+                  <div className="text-xs text-cyan-300 flex items-center gap-1">
+                    <User size={12} />
+                    <span className="truncate">{purchaserUsername}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Target Player - Compact */}
+            {targetPlayerName && (
+              <div className="text-xs text-green-300 flex items-center gap-1 mb-1">
+                <Target size={12} />
+                <span>For: {targetPlayerName}</span>
+              </div>
+            )}
+
+            {/* Cost - Compact */}
+            {cost !== undefined && (
+              <div className="flex items-center gap-1 text-xs">
+                <Zap className="text-yellow-300" size={12} />
+                <span className="text-yellow-200 font-bold">{cost} Coins</span>
+              </div>
+            )}
+
+            {/* Small stats indicator if stats exist */}
+            {stats && stats.length > 0 && (
+              <div className="text-xs text-purple-300 mt-1">
+                {stats.length} stat{stats.length > 1 ? "s" : ""}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

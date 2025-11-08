@@ -60,9 +60,39 @@ export default function Games() {
   const [showItemDrop, setShowItemDrop] = useState<{
     name: string;
     image?: string;
+    purchaserUsername?: string;
+    targetPlayerName?: string;
+    stats?: Array<{
+      name: string;
+      currentValue: number;
+      maxValue: number;
+      description: string;
+    }>;
+    cost?: number;
   } | null>(null);
   const [arenaLoader, setArenaLoader] = useState(false);
   const [showSpecialMove, setShowSpecialMove] = useState(false);
+  const [specialEffect, setSpecialEffect] = useState<{
+    type: "colour_bomb" | "striped" | "wrapped";
+    targetColor?: string;
+  } | null>(null);
+  const [automaticMoves, setAutomaticMoves] = useState<{
+    count: number;
+  } | null>(null);
+  const [showPackageDrop, setShowPackageDrop] = useState<{
+    name: string;
+    image?: string;
+    playerName?: string;
+    playerPoints?: number;
+    cost?: number;
+    stats?: Array<{
+      name: string;
+      currentValue: number;
+      maxValue: number;
+      description: string;
+    }>;
+    moveCount?: number;
+  } | null>(null);
 
   // Replace with your actual user ID or get it from your auth system
   const userId = localStorage.getItem("walletAddress"); // You should replace this with actual user ID from your auth system
@@ -329,18 +359,131 @@ export default function Games() {
       ]);
     };
     arena.onPackageDrop = (data) => {
-      setLastDrop(data?.packages?.[0] || null);
+      console.log("Package drop: [Games]", data);
+
+      // Extract package data from playerPackageDrops
+      const playerPackageDrops = data?.playerPackageDrops || [];
+      if (playerPackageDrops.length === 0) return;
+
+      // Find the first player with eligible packages
+      const playerWithPackage = playerPackageDrops.find(
+        (p: any) => p.eligiblePackages && p.eligiblePackages.length > 0
+      );
+
+      if (!playerWithPackage) return;
+
+      const packageData = playerWithPackage.eligiblePackages[0];
+      const packageName = packageData?.name || "Unknown Package";
+      const packageImage = packageData?.image;
+      const playerName = playerWithPackage?.playerName || "Unknown";
+      const playerPoints = playerWithPackage?.playerPoints || 0;
+      const cost = packageData?.cost || 0;
+      const stats = packageData?.stats || [];
+
+      // Extract move count from package name (e.g., "5X moves" -> 5)
+      let moveCount = 0;
+      const moveMatch = packageName.match(/(\d+)x?\s*moves?/i);
+      if (moveMatch) {
+        moveCount = parseInt(moveMatch[1], 10);
+      }
+
+      // Update last drop for monitoring
+      const dropInfo = {
+        packageName,
+        packageImage,
+        playerName,
+        playerPoints,
+        cost,
+        stats,
+        moveCount,
+        currentCycle: data?.currentCycle,
+        gameId: data?.gameId,
+        ...data,
+      };
+      setLastDrop(dropInfo);
+
+      // Add to monitor events
       setMonitorEvents((prev) => [
         ...prev,
-        { type: "package_drop", data, timestamp: new Date() },
+        { type: "package_drop", data: dropInfo, timestamp: new Date() },
       ]);
+
+      // Show package drop notification
+      setShowPackageDrop({
+        name: packageName,
+        image: packageImage,
+        playerName,
+        playerPoints,
+        cost,
+        stats,
+        moveCount,
+      });
+
+      // If this is a move-based package, trigger automatic moves
+      if (moveCount > 0) {
+        setAutomaticMoves({
+          count: moveCount,
+        });
+      }
+
+      // Play sound
+      playSound("score");
     };
     arena.onImmediateItemDrop = (data) => {
-      setLastDrop(data);
+      console.log("Immediate item drop: [Games]", data);
+
+      // Extract item data
+      const itemData = data?.item || data;
+      const packageData = data?.package || data;
+      const itemName =
+        itemData?.name || packageData?.name || data?.itemName || "Unknown Item";
+      const itemImage =
+        itemData?.image || packageData?.image || data?.item?.image;
+      const purchaserUsername = data?.purchaserUsername || "Unknown";
+      const targetPlayerName = data?.targetPlayerName || "Unknown";
+      const stats =
+        itemData?.stats || packageData?.stats || data?.item?.stats || [];
+      const cost = data?.cost || packageData?.cost || itemData?.cost || 0;
+
+      // Update last drop for monitoring
+      const dropInfo = {
+        itemName,
+        itemImage,
+        purchaserUsername,
+        targetPlayerName,
+        cost,
+        stats,
+        ...data,
+      };
+      setLastDrop(dropInfo);
+
+      // Add to monitor events
       setMonitorEvents((prev) => [
         ...prev,
-        { type: "immediate_item_drop", data, timestamp: new Date() },
+        { type: "immediate_item_drop", data: dropInfo, timestamp: new Date() },
       ]);
+
+      // Show the enhanced popup
+      setShowItemDrop({
+        name: itemName,
+        image: itemImage,
+        purchaserUsername,
+        targetPlayerName,
+        stats,
+        cost,
+      });
+
+      // Check if this is a Colour Bomb and trigger game effect immediately
+      // No delay since notification is small and non-blocking
+      if (
+        itemName.toLowerCase().includes("colour bomb") ||
+        itemName.toLowerCase().includes("color bomb")
+      ) {
+        setSpecialEffect({ type: "colour_bomb" });
+      }
+
+      // Play sound
+      playSound("score");
     };
     arena.onEventTriggered = (data) => {
       setLastGameEvent(data?.event);
@@ -350,6 +493,7 @@ export default function Games() {
       ]);
     };
     arena.onPlayerJoined = (data) => {
+      console.log("Player joined: [Games]", data);
       setLastJoin(data);
       setMonitorEvents((prev) => [
         ...prev,
@@ -481,6 +625,10 @@ export default function Games() {
       setLastBoostCycleUpdate(null);
       setShowSpecialMove(false);
       setShowBoostPopup(null);
+      setSpecialEffect(null);
+      setShowItemDrop(null);
+      setAutomaticMoves(null);
+      setShowPackageDrop(null);
 
       toast({
         title: "Arena Disconnected",
@@ -721,11 +869,55 @@ export default function Games() {
             <Gift /> LAST DROP
           </span>
           {lastDrop ? (
-            <div>
-              Item:{" "}
-              <span className="text-yellow-200">
-                {lastDrop.itemName || lastDrop.name}
-              </span>
+            <div className="text-sm">
+              <div>
+                {lastDrop.packageName ? "Package" : "Item"}:{" "}
+                <span className="text-yellow-200">
+                  {lastDrop.packageName || lastDrop.itemName || lastDrop.name}
+                </span>
+              </div>
+              {lastDrop.purchaserUsername && (
+                <div className="mt-1">
+                  Purchaser:{" "}
+                  <span className="text-cyan-300">
+                    {lastDrop.purchaserUsername}
+                  </span>
+                </div>
+              )}
+              {lastDrop.playerName && (
+                <div className="mt-1">
+                  Player:{" "}
+                  <span className="text-cyan-300">{lastDrop.playerName}</span>
+                </div>
+              )}
+              {lastDrop.targetPlayerName && (
+                <div className="mt-1">
+                  Target:{" "}
+                  <span className="text-green-300">
+                    {lastDrop.targetPlayerName}
+                  </span>
+                </div>
+              )}
+              {lastDrop.moveCount && lastDrop.moveCount > 0 && (
+                <div className="mt-1">
+                  Moves:{" "}
+                  <span className="text-blue-300">{lastDrop.moveCount}X</span>
+                </div>
+              )}
+              {lastDrop.playerPoints !== undefined && (
+                <div className="mt-1">
+                  Points:{" "}
+                  <span className="text-green-300">
+                    {lastDrop.playerPoints}
+                  </span>
+                </div>
+              )}
+              {lastDrop.cost !== undefined && (
+                <div className="mt-1">
+                  Cost:{" "}
+                  <span className="text-yellow-300">{lastDrop.cost} Coins</span>
+                </div>
+              )}
               {lastDrop.type && (
                 <>
                   <br />
@@ -770,6 +962,25 @@ export default function Games() {
                     (ev.data.playerName ||
                       ev.data.eventName ||
                       ev.data.itemName ||
+                      ev.data.packageName ||
+                      ev.data.name ||
+                      (ev.type === "immediate_item_drop" &&
+                      ev.data.purchaserUsername
+                        ? `${ev.data.itemName || ev.data.name} by ${
+                            ev.data.purchaserUsername
+                          }`
+                        : "") ||
+                      (ev.type === "package_drop" && ev.data.packageName
+                        ? `${ev.data.packageName}${
+                            ev.data.playerName
+                              ? ` by ${ev.data.playerName}`
+                              : ""
+                          }${
+                            ev.data.moveCount
+                              ? ` (${ev.data.moveCount} moves)`
+                              : ""
+                          }`
+                        : "") ||
                       "")}
                 </span>
               </div>
@@ -900,7 +1111,29 @@ export default function Games() {
                   </span>
                 )}
                 {ev.type === "package_drop" && (
-                  <span className="text-blue-300">DROP</span>
+                  <span className="text-blue-300">
+                    {ev.data?.packageName || "DROP"}
+                    {ev.data?.playerName && (
+                      <span className="text-cyan-300 ml-1">
+                        by {ev.data.playerName}
+                      </span>
+                    )}
+                    {ev.data?.moveCount && ev.data.moveCount > 0 && (
+                      <span className="text-purple-300 ml-1">
+                        ({ev.data.moveCount} moves)
+                      </span>
+                    )}
+                  </span>
+                )}
+                {ev.type === "immediate_item_drop" && (
+                  <span className="text-pink-400">
+                    {ev.data?.itemName || ev.data?.name}
+                    {ev.data?.purchaserUsername && (
+                      <span className="text-cyan-300 ml-1">
+                        by {ev.data.purchaserUsername}
+                      </span>
+                    )}
+                  </span>
                 )}
                 {ev.type === "game_completed" && (
                   <span className="text-green-400 font-bold">🏁</span>
@@ -942,6 +1175,20 @@ export default function Games() {
               level={levelId}
               onScoreUpdate={handleScoreUpdate}
               onMoveComplete={handleMoveComplete}
+              specialEffect={specialEffect}
+              onSpecialEffectComplete={() => {
+                setSpecialEffect(null);
+              }}
+              automaticMoves={
+                automaticMoves
+                  ? {
+                      count: automaticMoves.count,
+                      onComplete: () => {
+                        setAutomaticMoves(null);
+                      },
+                    }
+                  : null
+              }
             />
             <div
               className="absolute inset-0 pointer-events-none rounded-2xl shadow-black/40 shadow-2xl ring-4 ring-purple-800 ring-inset"
@@ -996,7 +1243,26 @@ export default function Games() {
         <ItemDropCelebrationPopup
           itemName={showItemDrop.name}
           itemImage={showItemDrop.image}
+          purchaserUsername={showItemDrop.purchaserUsername}
+          targetPlayerName={showItemDrop.targetPlayerName}
+          stats={showItemDrop.stats}
+          cost={showItemDrop.cost}
           onClose={() => setShowItemDrop(null)}
+        />
+      )}
+      {/* Package drop overlay */}
+      {showPackageDrop && (
+        <ItemDropCelebrationPopup
+          itemName={showPackageDrop.name}
+          itemImage={showPackageDrop.image}
+          purchaserUsername={showPackageDrop.playerName}
+          targetPlayerName={showPackageDrop.playerName}
+          stats={showPackageDrop.stats}
+          cost={showPackageDrop.cost}
+          onClose={() => {
+            setShowPackageDrop(null);
+            setAutomaticMoves(null);
+          }}
         />
       )}
     </main>
