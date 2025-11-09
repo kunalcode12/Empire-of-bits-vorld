@@ -81,7 +81,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       if ("phantom" in window && window.phantom?.solana?.isPhantom) {
         wallets.push({
           name: "Phantom",
-          icon: "/metamask.png", // Using existing icon for simplicity
+          icon: "https://academy-public.coinmarketcap.com/optimized-uploads/242264094c2f476983512c1ead9bd3d6.png",
           provider: window.phantom.solana,
         });
       }
@@ -90,8 +90,17 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       if ("solflare" in window && window.solflare?.isSolflare) {
         wallets.push({
           name: "Solflare",
-          icon: "/walletconnect.png", // Using existing icon for simplicity
+          icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBQwXV8TrXVS6K7QxfdLc9qpG3H22aYivwXw&s",
           provider: window.solflare,
+        });
+      }
+
+      // Check for Backpack
+      if ("backpack" in window && window.backpack) {
+        wallets.push({
+          name: "Backpack",
+          icon: "https://play-lh.googleusercontent.com/oU0hWlCk3ZT_5dng09QaxdcIUpY2m5GkZGDa4TrbJ36zG6zxKL2yFPyC9jvnMeecRPA",
+          provider: window.backpack,
         });
       }
 
@@ -110,9 +119,16 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
 
     // Set up event listeners for wallet changes
     window.addEventListener("load", detectWallets);
+    
+    // Listen for wallet detection refresh events (e.g., when modal opens)
+    const handleWalletRefresh = () => {
+      detectWallets();
+    };
+    window.addEventListener("wallet-detection-refresh", handleWalletRefresh);
 
     return () => {
       window.removeEventListener("load", detectWallets);
+      window.removeEventListener("wallet-detection-refresh", handleWalletRefresh);
     };
   }, []);
 
@@ -148,11 +164,18 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     try {
       setConnecting(true);
 
-      let provider = walletProvider;
-
-      if (!provider && availableWallets.length > 0) {
-        provider = availableWallets[0].provider;
+      // Require explicit wallet provider - no auto-connect
+      if (!walletProvider) {
+        toast({
+          title: "Wallet not selected",
+          description: "Please select a wallet from the modal",
+          variant: "destructive",
+        });
+        setConnecting(false);
+        return;
       }
+
+      const provider = walletProvider;
 
       if (!provider) {
         toast({
@@ -160,6 +183,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
           description: "Please install a Solana wallet extension like Phantom",
           variant: "destructive",
         });
+        setConnecting(false);
         return;
       }
 
@@ -354,6 +378,11 @@ declare global {
     };
     solflare?: {
       isSolflare: boolean;
+      connect: () => Promise<{ publicKey: { toString: () => string } }>;
+      disconnect: () => Promise<void>;
+      signTransaction: (transaction: Transaction) => Promise<Transaction>;
+    };
+    backpack?: {
       connect: () => Promise<{ publicKey: { toString: () => string } }>;
       disconnect: () => Promise<void>;
       signTransaction: (transaction: Transaction) => Promise<Transaction>;

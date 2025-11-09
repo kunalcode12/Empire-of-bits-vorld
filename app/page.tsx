@@ -33,6 +33,8 @@ import Header from "@/components/Header";
 import RetroWelcomePopup from "@/components/retroWelcomePopup";
 import RetroGameCompletionPopup from "@/components/GameComplitionPopup";
 import { VorldAuthService } from "../lib/authservice";
+import { WalletSelectModal } from "@/components/wallet-select-modal";
+import { useSolanaWallet } from "@/components/solana-wallet-provider";
 
 export default function Home() {
   const [isHovering, setIsHovering] = useState("");
@@ -40,9 +42,14 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("featured");
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [cryptoBalance, setCryptoBalance] = useState("0.00");
-  const [tokenBalance, setTokenBalance] = useState("0");
+  
+  // Use actual wallet provider
+  const {
+    walletAddress,
+    connected: walletConnected,
+    balance: cryptoBalance,
+    availableWallets,
+  } = useSolanaWallet();
   const [scrolled, setScrolled] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -271,39 +278,7 @@ export default function Home() {
   //   })();
   // }, []);
 
-  // 3. Update the handleConnectWallet function to ensure proper flow
-  const handleConnectWallet = async () => {
-    try {
-      setIsLoading(true);
-      console.log("Connecting wallet...");
-
-      // Mock wallet connection process
-      // For real implementation, replace with actual wallet connection code
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setWalletConnected(true);
-      setShowWalletModal(false);
-      setCryptoBalance("0.05");
-      setTokenBalance("100");
-
-      // Note: We're not calling fetchUserPoints here anymore
-      // because the useEffect will handle that
-
-      toast({
-        title: "Wallet Connected",
-        description: "Your wallet has been connected successfully!",
-      });
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-      toast({
-        variant: "destructive",
-        title: "Connection Failed",
-        description: "Failed to connect wallet. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Wallet connection is now handled by WalletSelectModal component
 
   const handlePlayGamesClick = async () => {
     try {
@@ -474,7 +449,7 @@ export default function Home() {
                       />
                       EOB Tokens
                     </span>
-                    <span className="font-bold text-lg">{tokenBalance}</span>
+                    <span className="font-bold text-lg">0</span>
                   </div>
                 </div>
               )}
@@ -492,98 +467,12 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Wallet Connection Modal */}
-      <AnimatePresence>
-        {showWalletModal && (
-          <motion.div
-            className="fixed inset-0 bg-foreground/80 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-background border-4 border-foreground p-8 max-w-md w-full relative pixel-corners"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-            >
-              <button
-                className="absolute top-4 right-4 text-foreground/70 hover:text-foreground"
-                onClick={() => {
-                  setShowWalletModal(false);
-                  playSound("click");
-                }}
-              >
-                <X className="h-8 w-8" />
-              </button>
-
-              <h2
-                className="text-3xl font-bold mb-8 text-center glitch-text-sm"
-                data-text="CONNECT WALLET"
-              >
-                CONNECT WALLET
-              </h2>
-
-              <div className="grid gap-5">
-                <AnimatedButton
-                  className="flex items-center justify-between p-5 border-3 border-foreground hover:border-[hsl(var(--accent-yellow))] hover:bg-foreground/5 transition-colors"
-                  onClick={handleConnectWallet}
-                >
-                  <div className="flex items-center">
-                    <Image
-                      src="/metamask.png"
-                      width={40}
-                      height={40}
-                      alt="MetaMask"
-                      className="mr-4"
-                    />
-                    <span className="font-bold text-xl">Phantom</span>
-                  </div>
-                  <ArrowRight className="h-6 w-6" />
-                </AnimatedButton>
-
-                <AnimatedButton
-                  className="flex items-center justify-between p-5 border-3 border-foreground hover:border-[hsl(var(--accent-yellow))] hover:bg-foreground/5 transition-colors"
-                  onClick={handleConnectWallet}
-                >
-                  <div className="flex items-center">
-                    <Image
-                      src="/walletconnect.png"
-                      width={40}
-                      height={40}
-                      alt="WalletConnect"
-                      className="mr-4"
-                    />
-                    <span className="font-bold text-xl">Backpack</span>
-                  </div>
-                  <ArrowRight className="h-6 w-6" />
-                </AnimatedButton>
-
-                <AnimatedButton
-                  className="flex items-center justify-between p-5 border-3 border-foreground hover:border-[hsl(var(--accent-yellow))] hover:bg-foreground/5 transition-colors"
-                  onClick={handleConnectWallet}
-                >
-                  <div className="flex items-center">
-                    <Image
-                      src="/coinbase.png"
-                      width={40}
-                      height={40}
-                      alt="Coinbase Wallet"
-                      className="mr-4"
-                    />
-                    <span className="font-bold text-xl">Solflare</span>
-                  </div>
-                  <ArrowRight className="h-6 w-6" />
-                </AnimatedButton>
-              </div>
-
-              <p className="text-sm text-foreground/70 mt-8 text-center">
-                By connecting your wallet, you agree to our Terms of Service and
-                Privacy Policy
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <WalletSelectModal
+        isOpen={showWalletModal}
+        onClose={() => {
+          setShowWalletModal(false);
+        }}
+      />
 
       <main className="flex-1 relative z-10 pt-28">
         {/* Hero Section */}

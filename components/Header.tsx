@@ -25,6 +25,7 @@ import RetroWelcomePopup from "./retroWelcomePopup";
 import { useSolanaWallet } from "@/components/solana-wallet-provider";
 import { pointsService } from "@/services/points-service";
 import { VorldAuthService } from "..//lib/authservice";
+import { WalletSelectModal } from "@/components/wallet-select-modal";
 
 interface HeaderProps {
   userPoints?: number;
@@ -727,7 +728,7 @@ export default function Header({
                 ) : (
                   <ParticleButton
                     onClick={() => {
-                      connectWallet();
+                      setShowWalletModal(true);
                       playSound("click");
                     }}
                     onHover={() => playSound("hover")}
@@ -834,169 +835,131 @@ export default function Header({
           </div>
         </div>
 
-        {/* Wallet Modal */}
-        <AnimatePresence>
-          {showWalletModal && (
-            <motion.div
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowWalletModal(false)}
-            >
+        {/* Wallet Modal - Show wallet selection or connected wallet info */}
+        {walletConnected ? (
+          <AnimatePresence>
+            {showWalletModal && (
               <motion.div
-                className="bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl p-6 max-w-md w-full relative"
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowWalletModal(false)}
               >
-                {/* Decorative elements */}
-                <div className="absolute -top-10 -left-10 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"></div>
-                <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-yellow-500/20 rounded-full blur-xl"></div>
-
-                <button
-                  className="absolute top-4 right-4 text-foreground/60 hover:text-foreground transition-colors"
-                  onClick={() => {
-                    setShowWalletModal(false);
-                    playSound("click");
-                  }}
-                  title="Close Wallet Modal"
+                <motion.div
+                  className="bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl p-6 max-w-md w-full relative"
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <X className="h-6 w-6" />
-                </button>
+                  {/* Decorative elements */}
+                  <div className="absolute -top-10 -left-10 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"></div>
+                  <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-yellow-500/20 rounded-full blur-xl"></div>
 
-                <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-yellow-500 bg-clip-text text-transparent">
-                  {walletConnected ? "WALLET CONNECTED" : "CONNECT WALLET"}
-                </h2>
+                  <button
+                    className="absolute top-4 right-4 text-foreground/60 hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      playSound("click");
+                    }}
+                    title="Close Wallet Modal"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
 
-                <div className="space-y-4">
-                  {walletConnected ? (
-                    <div className="space-y-6">
-                      <div className="p-4 rounded-lg bg-foreground/5 border border-foreground/10">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-foreground/70">Address</span>
-                          <span className="font-mono text-sm">
-                            {walletAddress
-                              ? `${walletAddress.slice(
-                                  0,
-                                  6
-                                )}...${walletAddress.slice(-6)}`
-                              : "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-foreground/70">Balance</span>
-                          <span className="font-bold text-[hsl(var(--accent-yellow))]">
-                            {cryptoBalance} SOL
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-foreground/70">Points</span>
-                          <span className="font-bold text-[hsl(var(--accent-purple))]">
-                            {points}
-                          </span>
-                        </div>
+                  <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-yellow-500 bg-clip-text text-transparent">
+                    WALLET CONNECTED
+                  </h2>
+
+                  <div className="space-y-6">
+                    <div className="p-4 rounded-lg bg-foreground/5 border border-foreground/10">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-foreground/70">Address</span>
+                        <span className="font-mono text-sm">
+                          {walletAddress
+                            ? `${walletAddress.slice(
+                                0,
+                                6
+                              )}...${walletAddress.slice(-6)}`
+                            : "N/A"}
+                        </span>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <motion.button
-                          className="p-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-bold rounded-lg"
-                          whileHover={{ scale: 1.03, y: -2 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                            handleBuyPoints();
-                            playSound("click");
-                          }}
-                          disabled={isProcessing}
-                        >
-                          BUY POINTS
-                        </motion.button>
-                        <motion.button
-                          className="p-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-lg"
-                          whileHover={{ scale: 1.03, y: -2 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                            handleSellPoints();
-                            playSound("click");
-                          }}
-                          disabled={
-                            isProcessing || points < POINTS_PER_TRANSACTION
-                          }
-                        >
-                          SELL POINTS
-                        </motion.button>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-foreground/70">Balance</span>
+                        <span className="font-bold text-[hsl(var(--accent-yellow))]">
+                          {cryptoBalance} SOL
+                        </span>
                       </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-foreground/70">Points</span>
+                        <span className="font-bold text-[hsl(var(--accent-purple))]">
+                          {points}
+                        </span>
+                      </div>
+                    </div>
 
-                      <AnimatedButton
-                        className="w-full flex items-center justify-center p-3 border-2 border-red-500 hover:bg-red-500/10 transition-colors rounded-lg"
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.button
+                        className="p-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-bold rounded-lg"
+                        whileHover={{ scale: 1.03, y: -2 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => {
-                          disconnectWallet();
-                          setPoints(0);
-                          setShowWalletModal(false);
+                          handleBuyPoints();
                           playSound("click");
                         }}
+                        disabled={isProcessing}
                       >
-                        <span className="font-bold text-red-500">
-                          DISCONNECT WALLET
-                        </span>
-                      </AnimatedButton>
+                        BUY POINTS
+                      </motion.button>
+                      <motion.button
+                        className="p-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-lg"
+                        whileHover={{ scale: 1.03, y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          handleSellPoints();
+                          playSound("click");
+                        }}
+                        disabled={
+                          isProcessing || points < POINTS_PER_TRANSACTION
+                        }
+                      >
+                        SELL POINTS
+                      </motion.button>
                     </div>
-                  ) : (
-                    <>
-                      {availableWallets.length > 0 ? (
-                        availableWallets.map((wallet, index) => (
-                          <AnimatedButton
-                            key={index}
-                            className="flex items-center justify-between p-4 border border-foreground/10 hover:border-foreground/30 bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-all duration-300"
-                            onClick={() => {
-                              connectWallet(wallet.provider);
-                              setShowWalletModal(false);
-                              playSound("click");
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <Image
-                                src={wallet.icon || "/placeholder.svg"}
-                                width={40}
-                                height={40}
-                                alt={wallet.name}
-                                className="mr-4 rounded-full"
-                              />
-                              <span className="font-bold text-xl">
-                                {wallet.name}
-                              </span>
-                            </div>
-                            <ChevronLeft className="h-6 w-6 rotate-180" />
-                          </AnimatedButton>
-                        ))
-                      ) : (
-                        <div className="text-center p-6 bg-foreground/5 rounded-lg border border-foreground/10">
-                          <p className="text-foreground mb-4">
-                            No Solana wallets detected
-                          </p>
-                          <a
-                            href="https://phantom.app/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-yellow-400 underline hover:text-yellow-300 transition-colors"
-                          >
-                            Install Phantom Wallet
-                          </a>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
 
-                <p className="text-sm text-foreground/50 mt-6 text-center">
-                  By connecting your wallet, you agree to our Terms of Service
-                  and Privacy Policy
-                </p>
+                    <AnimatedButton
+                      className="w-full flex items-center justify-center p-3 border-2 border-red-500 hover:bg-red-500/10 transition-colors rounded-lg"
+                      onClick={() => {
+                        disconnectWallet();
+                        setPoints(0);
+                        setShowWalletModal(false);
+                        playSound("click");
+                      }}
+                    >
+                      <span className="font-bold text-red-500">
+                        DISCONNECT WALLET
+                      </span>
+                    </AnimatedButton>
+                  </div>
+
+                  <p className="text-sm text-foreground/50 mt-6 text-center">
+                    By connecting your wallet, you agree to our Terms of Service
+                    and Privacy Policy
+                  </p>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        ) : (
+          <WalletSelectModal
+            isOpen={showWalletModal}
+            onClose={() => {
+              setShowWalletModal(false);
+              playSound("click");
+            }}
+          />
+        )}
 
         {/* Mobile menu - full screen overlay */}
         <AnimatePresence>
@@ -1150,7 +1113,7 @@ export default function Header({
                       <button
                         className="w-full p-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold rounded-lg"
                         onClick={() => {
-                          connectWallet();
+                          setShowWalletModal(true);
                           setMenuOpen(false);
                           playSound("click");
                         }}
