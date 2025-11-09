@@ -73,8 +73,22 @@ export default function Games() {
   const [arenaLoader, setArenaLoader] = useState(false);
   const [showSpecialMove, setShowSpecialMove] = useState(false);
   const [specialEffect, setSpecialEffect] = useState<{
-    type: "colour_bomb" | "striped" | "wrapped";
+    type:
+      | "colour_bomb"
+      | "striped"
+      | "wrapped"
+      | "sweet_teeth"
+      | "lollipop_hammer"
+      | "free_switch";
     targetColor?: string;
+    itemData?: {
+      name?: string;
+      image?: string;
+      stats?: Array<{
+        name: string;
+        description: string;
+      }>;
+    };
   } | null>(null);
   const [automaticMoves, setAutomaticMoves] = useState<{
     count: number;
@@ -425,6 +439,28 @@ export default function Games() {
           count: moveCount,
         });
       }
+      // Check for Free Switch package (based on name or stats)
+      else if (
+        packageName.toLowerCase().includes("free switch") ||
+        packageName.toLowerCase().includes("free swap") ||
+        stats.some(
+          (stat: any) =>
+            stat?.name?.toLowerCase().includes("switch") ||
+            stat?.description?.toLowerCase().includes("switch") ||
+            stat?.description?.toLowerCase().includes("swap")
+        )
+      ) {
+        setTimeout(() => {
+          setSpecialEffect({
+            type: "free_switch",
+            itemData: {
+              name: packageName,
+              image: packageImage,
+              stats: stats,
+            },
+          });
+        }, 1500); // Wait for notification to appear
+      }
 
       // Play sound
       playSound("score");
@@ -473,14 +509,75 @@ export default function Games() {
         cost,
       });
 
-      // Check if this is a Colour Bomb and trigger game effect immediately
-      // No delay since notification is small and non-blocking
+      // Determine item type and trigger appropriate game effect
+      // Wait a bit for the notification to show, then trigger the effect
+      const itemNameLower = itemName.toLowerCase();
+
+      // Check for Colour Bomb
       if (
-        itemName.toLowerCase().includes("colour bomb") ||
-        itemName.toLowerCase().includes("color bomb")
+        itemNameLower.includes("colour bomb") ||
+        itemNameLower.includes("color bomb")
       ) {
-        setSpecialEffect({ type: "colour_bomb" });
+        setTimeout(() => {
+          setSpecialEffect({
+            type: "colour_bomb",
+            itemData: {
+              name: itemName,
+              image: itemImage,
+              stats: stats,
+            },
+          });
+        }, 1500); // Wait for notification to appear
       }
+      // Check for Sweet Teeth (based on name or stats)
+      else if (
+        itemNameLower.includes("sweet teeth") ||
+        itemNameLower.includes("sweet tooth") ||
+        stats.some(
+          (stat: any) =>
+            stat?.name?.toLowerCase().includes("gobble") ||
+            stat?.description?.toLowerCase().includes("gobble") ||
+            stat?.description?.toLowerCase().includes("chocolate") ||
+            stat?.description?.toLowerCase().includes("licorice") ||
+            stat?.description?.toLowerCase().includes("jelly")
+        )
+      ) {
+        setTimeout(() => {
+          setSpecialEffect({
+            type: "sweet_teeth",
+            itemData: {
+              name: itemName,
+              image: itemImage,
+              stats: stats,
+            },
+          });
+        }, 1500); // Wait for notification to appear
+      }
+      // Check for Lollipop Hammer (based on name or stats)
+      else if (
+        itemNameLower.includes("lollipop hammer") ||
+        itemNameLower.includes("hammer") ||
+        stats.some(
+          (stat: any) =>
+            stat?.name?.toLowerCase().includes("smash") ||
+            stat?.description?.toLowerCase().includes("smash") ||
+            stat?.description?.toLowerCase().includes("destroy") ||
+            stat?.description?.toLowerCase().includes("click")
+        )
+      ) {
+        setTimeout(() => {
+          setSpecialEffect({
+            type: "lollipop_hammer",
+            itemData: {
+              name: itemName,
+              image: itemImage,
+              stats: stats,
+            },
+          });
+        }, 1500); // Wait for notification to appear
+      }
+      // Add more item types here as needed
+      // Example: else if (itemNameLower.includes("striped")) { ... }
 
       // Play sound
       playSound("score");

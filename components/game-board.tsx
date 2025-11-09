@@ -19,8 +19,22 @@ interface GameBoardProps {
   onScoreUpdate: (points: number) => void;
   onMoveComplete: () => void;
   specialEffect?: {
-    type: "colour_bomb" | "striped" | "wrapped";
+    type:
+      | "colour_bomb"
+      | "striped"
+      | "wrapped"
+      | "sweet_teeth"
+      | "lollipop_hammer"
+      | "free_switch";
     targetColor?: string;
+    itemData?: {
+      name?: string;
+      image?: string;
+      stats?: Array<{
+        name: string;
+        description: string;
+      }>;
+    };
   } | null;
   onSpecialEffectComplete?: () => void;
   automaticMoves?: {
@@ -53,6 +67,19 @@ export default function GameBoard({
     col: number;
   } | null>(null);
   const [showColorBombEffect, setShowColorBombEffect] = useState(false);
+  const [showSweetTeethEffect, setShowSweetTeethEffect] = useState(false);
+  const [sweetTeethPosition, setSweetTeethPosition] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
+  const [showLollipopHammerEffect, setShowLollipopHammerEffect] =
+    useState(false);
+  const [hammerDestroysLeft, setHammerDestroysLeft] = useState(0);
+  const [hammerDestroyedCandies, setHammerDestroyedCandies] = useState<
+    { row: number; col: number }[]
+  >([]);
+  const [showFreeSwitchEffect, setShowFreeSwitchEffect] = useState(false);
+  const [freeSwitchUsed, setFreeSwitchUsed] = useState(false);
   const [showAutoMoveEffect, setShowAutoMoveEffect] = useState(false);
   const [autoMoveProgress, setAutoMoveProgress] = useState(0);
   const boardContainerRef = useRef<HTMLDivElement>(null);
@@ -283,9 +310,225 @@ export default function GameBoard({
       };
 
       executeColourBomb();
+    } else if (
+      specialEffect?.type === "sweet_teeth" &&
+      board.length > 0 &&
+      !effectInProgressRef.current
+    ) {
+      effectInProgressRef.current = true;
+
+      const executeSweetTeeth = async () => {
+        const currentBoard = boardStateRef.current;
+        if (currentBoard.length === 0) {
+          effectInProgressRef.current = false;
+          return;
+        }
+
+        setShowSweetTeethEffect(true);
+        playSound("match");
+
+        // Sweet Teeth effect: Gobbles up candies in a sweeping wave pattern
+        // Sweep from top to bottom, row by row, creating a wave effect
+        const gobbledCandies: { row: number; col: number }[] = [];
+        const clearedBoard = [...currentBoard.map((row) => [...row])];
+
+        // Create a wave pattern - sweep row by row from top to bottom
+        // Each row is gobbled in segments to create a wave effect
+        for (let row = 0; row < BOARD_SIZE; row++) {
+          // Process each row in chunks to create a wave effect
+          const rowCells: { row: number; col: number }[] = [];
+
+          // Collect all candies in this row
+          for (let col = 0; col < BOARD_SIZE; col++) {
+            if (
+              clearedBoard[row][col] &&
+              clearedBoard[row][col] in CANDY_COLORS
+            ) {
+              rowCells.push({ row, col });
+            }
+          }
+
+          if (rowCells.length > 0) {
+            // Process row in chunks for wave effect
+            const chunkSize = 3; // Gobble 3 candies at a time
+            for (let i = 0; i < rowCells.length; i += chunkSize) {
+              const chunk = rowCells.slice(i, i + chunkSize);
+
+              // Show Sweet Teeth position at the start of the chunk
+              if (chunk.length > 0) {
+                setSweetTeethPosition(chunk[0]);
+              }
+
+              // Animate gobbling for this chunk
+              setAnimations(
+                chunk.map((cell) => ({
+                  row: cell.row,
+                  col: cell.col,
+                  type: "gobble",
+                }))
+              );
+
+              // Add to gobbled candies
+              gobbledCandies.push(...chunk);
+
+              // Wait for animation
+              await new Promise((resolve) => setTimeout(resolve, 120));
+
+              // Clear these candies
+              chunk.forEach((cell) => {
+                clearedBoard[cell.row][cell.col] = "";
+              });
+
+              setBoard([...clearedBoard.map((r) => [...r])]);
+
+              // Small delay between chunks
+              await new Promise((resolve) => setTimeout(resolve, 80));
+            }
+          }
+
+          // Delay between rows for wave effect
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        // Clear animations
+        setAnimations([]);
+        setSweetTeethPosition(null);
+        setShowSweetTeethEffect(false);
+
+        // Calculate points: base points per candy + bonus
+        const points =
+          gobbledCandies.length * 20 + (gobbledCandies.length > 20 ? 500 : 200);
+        onScoreUpdate(points);
+
+        // Wait for final animation
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        // Drop candies and check for cascades
+        const droppedBoard = await dropCandies(clearedBoard);
+        await checkForMatches(droppedBoard, false);
+
+        // Notify completion
+        effectInProgressRef.current = false;
+        if (onSpecialEffectComplete) {
+          setTimeout(() => {
+            onSpecialEffectComplete();
+          }, 500);
+        }
+      };
+
+      executeSweetTeeth();
+    } else if (
+      specialEffect?.type === "lollipop_hammer" &&
+      board.length > 0 &&
+      !effectInProgressRef.current
+    ) {
+      // Lollipop Hammer: Interactive mode - player can click to destroy 2 candies
+      effectInProgressRef.current = true;
+      setShowLollipopHammerEffect(true);
+      setHammerDestroysLeft(2);
+      setHammerDestroyedCandies([]);
+      playSound("select");
+      // Don't set effectInProgressRef to false immediately - wait for player interactions
+      effectInProgressRef.current = false;
+    } else if (
+      specialEffect?.type === "free_switch" &&
+      board.length > 0 &&
+      !effectInProgressRef.current
+    ) {
+      // Free Switch: Interactive mode - player can swap any 2 candies without using moves
+      effectInProgressRef.current = true;
+      setShowFreeSwitchEffect(true);
+      setFreeSwitchUsed(false);
+      playSound("select");
+      // Don't set effectInProgressRef to false immediately - wait for player interactions
+      effectInProgressRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialEffect]);
+
+  // Handle Lollipop Hammer candy destruction
+  const handleHammerDestroy = async (row: number, col: number) => {
+    if (
+      !showLollipopHammerEffect ||
+      hammerDestroysLeft <= 0 ||
+      isSwapping ||
+      isChecking ||
+      effectInProgressRef.current
+    ) {
+      return;
+    }
+
+    const currentBoard = boardStateRef.current;
+    if (
+      currentBoard.length === 0 ||
+      !currentBoard[row] ||
+      !currentBoard[row][col] ||
+      !(currentBoard[row][col] in CANDY_COLORS)
+    ) {
+      return;
+    }
+
+    // Check if this candy was already destroyed
+    if (hammerDestroyedCandies.some((c) => c.row === row && c.col === col)) {
+      return;
+    }
+
+    effectInProgressRef.current = true;
+    playSound("match");
+
+    // Add to destroyed candies list
+    const newDestroyed = [...hammerDestroyedCandies, { row, col }];
+    setHammerDestroyedCandies(newDestroyed);
+    setHammerDestroysLeft(hammerDestroysLeft - 1);
+
+    // Show hammer animation
+    setAnimations([
+      {
+        row,
+        col,
+        type: "hammer",
+      },
+    ]);
+
+    // Wait for animation
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Destroy the candy
+    const newBoard = [...currentBoard.map((r) => [...r])];
+    newBoard[row][col] = "";
+    setBoard(newBoard);
+
+    // Award points for destruction
+    const points = 150; // Points per destroyed candy
+    onScoreUpdate(points);
+
+    // Clear animation
+    setAnimations([]);
+
+    // Wait a bit
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // If we've destroyed 2 candies, complete the effect
+    if (newDestroyed.length >= 2) {
+      setShowLollipopHammerEffect(false);
+      setHammerDestroysLeft(0);
+
+      // Drop candies and check for cascades
+      const droppedBoard = await dropCandies(newBoard);
+      await checkForMatches(droppedBoard, false);
+
+      // Complete the effect
+      effectInProgressRef.current = false;
+      if (onSpecialEffectComplete) {
+        setTimeout(() => {
+          onSpecialEffectComplete();
+        }, 500);
+      }
+    } else {
+      // Still have more destructions left
+      effectInProgressRef.current = false;
+    }
+  };
 
   const initializeBoard = async () => {
     const newBoard: string[][] = [];
@@ -321,6 +564,17 @@ export default function GameBoard({
 
   // Handle drag start
   const handleDragStart = (row: number, col: number) => {
+    // Don't allow dragging when hammer is active
+    if (showLollipopHammerEffect && hammerDestroysLeft > 0) {
+      return;
+    }
+    // Free Switch mode: allow dragging but treat it as selection for free swap
+    if (showFreeSwitchEffect && !freeSwitchUsed) {
+      setDragStart({ row, col });
+      setSelectedCandy({ row, col });
+      playSound("select");
+      return;
+    }
     if (isSwapping || isChecking) return;
 
     setDragStart({ row, col });
@@ -330,9 +584,19 @@ export default function GameBoard({
 
   // Handle drag over
   const handleDragOver = (row: number, col: number) => {
+    // Don't allow dragging when hammer is active
+    if (showLollipopHammerEffect && hammerDestroysLeft > 0) {
+      return;
+    }
     if (!dragStart || isSwapping || isChecking) return;
 
-    // Only consider adjacent candies
+    // Free Switch mode: allow dragging to any candy (not just adjacent)
+    if (showFreeSwitchEffect && !freeSwitchUsed) {
+      setSelectedCandy({ row, col });
+      return;
+    }
+
+    // Normal mode: Only consider adjacent candies
     const isAdjacent =
       (Math.abs(dragStart.row - row) === 1 && dragStart.col === col) ||
       (Math.abs(dragStart.col - col) === 1 && dragStart.row === row);
@@ -344,13 +608,39 @@ export default function GameBoard({
 
   // Handle drag end
   const handleDragEnd = () => {
+    // Don't allow dragging when hammer is active
+    if (showLollipopHammerEffect && hammerDestroysLeft > 0) {
+      setDragStart(null);
+      setSelectedCandy(null);
+      return;
+    }
     if (!dragStart || !selectedCandy || isSwapping || isChecking) {
       setDragStart(null);
       setSelectedCandy(null);
       return;
     }
 
-    // If we dragged to a different candy
+    // Free Switch mode: allow swapping any two candies
+    if (showFreeSwitchEffect && !freeSwitchUsed) {
+      if (
+        dragStart.row !== selectedCandy.row ||
+        dragStart.col !== selectedCandy.col
+      ) {
+        // Swap the two candies (free switch - no move consumed)
+        swapCandies(
+          dragStart.row,
+          dragStart.col,
+          selectedCandy.row,
+          selectedCandy.col,
+          true
+        );
+      }
+      setDragStart(null);
+      setSelectedCandy(null);
+      return;
+    }
+
+    // Normal mode: If we dragged to a different candy
     if (
       dragStart.row !== selectedCandy.row ||
       dragStart.col !== selectedCandy.col
@@ -367,7 +657,8 @@ export default function GameBoard({
           dragStart.row,
           dragStart.col,
           selectedCandy.row,
-          selectedCandy.col
+          selectedCandy.col,
+          false
         );
         playSound("swap");
       }
@@ -379,24 +670,47 @@ export default function GameBoard({
 
   // Legacy click handler (as fallback)
   const handleCandyClick = (row: number, col: number) => {
+    // If Lollipop Hammer is active, handle destruction instead of selection
+    if (showLollipopHammerEffect && hammerDestroysLeft > 0) {
+      handleHammerDestroy(row, col);
+      return;
+    }
+
     if (isSwapping || isChecking) return;
 
+    // For Free Switch, allow selecting any candy
     if (selectedCandy === null) {
       setSelectedCandy({ row, col });
       playSound("select");
     } else {
-      // Check if the clicked candy is adjacent to the selected candy
-      const isAdjacent =
-        (Math.abs(selectedCandy.row - row) === 1 &&
-          selectedCandy.col === col) ||
-        (Math.abs(selectedCandy.col - col) === 1 && selectedCandy.row === row);
+      // For Free Switch, allow swapping any two candies (not just adjacent)
+      const isFreeSwitchActive = showFreeSwitchEffect && !freeSwitchUsed;
 
-      if (isAdjacent) {
-        swapCandies(selectedCandy.row, selectedCandy.col, row, col);
-        playSound("swap");
+      if (isFreeSwitchActive) {
+        // Free Switch: Can swap any two candies
+        if (selectedCandy.row === row && selectedCandy.col === col) {
+          // Clicked the same candy, deselect
+          setSelectedCandy(null);
+        } else {
+          // Swap the two candies (free switch - no move consumed)
+          swapCandies(selectedCandy.row, selectedCandy.col, row, col, true);
+          setSelectedCandy(null);
+        }
       } else {
-        setSelectedCandy({ row, col });
-        playSound("select");
+        // Normal mode: Check if the clicked candy is adjacent to the selected candy
+        const isAdjacent =
+          (Math.abs(selectedCandy.row - row) === 1 &&
+            selectedCandy.col === col) ||
+          (Math.abs(selectedCandy.col - col) === 1 &&
+            selectedCandy.row === row);
+
+        if (isAdjacent) {
+          swapCandies(selectedCandy.row, selectedCandy.col, row, col, false);
+          playSound("swap");
+        } else {
+          setSelectedCandy({ row, col });
+          playSound("select");
+        }
       }
     }
   };
@@ -405,7 +719,8 @@ export default function GameBoard({
     row1: number,
     col1: number,
     row2: number,
-    col2: number
+    col2: number,
+    isFreeSwitch = false
   ) => {
     setIsSwapping(true);
 
@@ -420,21 +735,47 @@ export default function GameBoard({
     setBoard(newBoard);
     setSelectedCandy(null);
 
+    // If this is a free switch, mark it as used and complete the effect
+    if (isFreeSwitch && showFreeSwitchEffect && !freeSwitchUsed) {
+      setFreeSwitchUsed(true);
+      setShowFreeSwitchEffect(false);
+
+      // Complete the effect after swap
+      setTimeout(() => {
+        if (onSpecialEffectComplete) {
+          onSpecialEffectComplete();
+        }
+      }, 100);
+    }
+
     // Check if the swap created a match
     setTimeout(async () => {
-      const hasMatches = await checkForMatches(newBoard, true);
+      // For free switch, always allow the swap (matched or unmatched)
+      // But only check for matches if it's not a free switch or if free switch created matches
+      const shouldCheckMatches = !isFreeSwitch || true; // Free switch can create matches too
+      const countMove = !isFreeSwitch; // Don't count moves for free switch
 
-      if (!hasMatches) {
-        // If no matches were created, swap back
-        const revertBoard = [...newBoard.map((row) => [...row])];
-        revertBoard[row1][col1] = newBoard[row2][col2];
-        revertBoard[row2][col2] = newBoard[row1][col1];
+      if (shouldCheckMatches) {
+        const hasMatches = await checkForMatches(newBoard, countMove);
 
-        setBoard(revertBoard);
-        playSound("invalid");
-      } else {
-        // Valid move
-        onMoveComplete();
+        if (!hasMatches && !isFreeSwitch) {
+          // If no matches were created and it's not a free switch, swap back
+          const revertBoard = [...newBoard.map((row) => [...row])];
+          revertBoard[row1][col1] = newBoard[row2][col2];
+          revertBoard[row2][col2] = newBoard[row1][col1];
+
+          setBoard(revertBoard);
+          playSound("invalid");
+        } else if (hasMatches && !isFreeSwitch) {
+          // Valid move (only count if not free switch)
+          onMoveComplete();
+        } else if (hasMatches && isFreeSwitch) {
+          // Free switch created matches - just play success sound, no move count
+          playSound("match");
+        } else if (!hasMatches && isFreeSwitch) {
+          // Free switch didn't create matches - that's fine, just complete
+          playSound("swap");
+        }
       }
 
       setIsSwapping(false);
@@ -633,6 +974,80 @@ export default function GameBoard({
         </div>
       )}
 
+      {/* Sweet Teeth Effect Overlay */}
+      {showSweetTeethEffect && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 via-red-500/30 to-pink-500/30 animate-pulse" />
+          <div className="relative z-10 text-center">
+            <div className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl animate-bounce">
+              <span className="text-orange-300">SWEET</span>{" "}
+              <span className="text-red-400">TEETH!</span>
+            </div>
+            <div className="mt-2 text-2xl text-orange-200 animate-pulse">
+              🦷 GOBBLE GOBBLE! 🦷
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sweet Teeth Character Animation */}
+      {sweetTeethPosition && (
+        <div
+          className="absolute z-40 pointer-events-none transition-all duration-150"
+          style={{
+            left: `${(sweetTeethPosition.col / BOARD_SIZE) * 100}%`,
+            top: `${(sweetTeethPosition.row / BOARD_SIZE) * 100}%`,
+            width: `${100 / BOARD_SIZE}%`,
+            height: `${100 / BOARD_SIZE}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="text-4xl animate-bounce">🦷</div>
+            <div className="absolute inset-0 bg-yellow-400/50 rounded-full animate-ping"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Lollipop Hammer Effect Overlay */}
+      {showLollipopHammerEffect && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <div className="bg-gradient-to-r from-purple-900/95 to-pink-900/95 border-4 border-yellow-400 rounded-lg px-6 py-3 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl animate-bounce">🔨</div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-yellow-300 font-pixel">
+                  LOLLIPOP HAMMER!
+                </div>
+                <div className="text-sm text-white mt-1">
+                  Click {hammerDestroysLeft} candy
+                  {hammerDestroysLeft !== 1 ? "ies" : ""} to destroy
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Free Switch Effect Overlay */}
+      {showFreeSwitchEffect && !freeSwitchUsed && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <div className="bg-gradient-to-r from-green-900/95 to-emerald-900/95 border-4 border-green-400 rounded-lg px-6 py-3 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl animate-bounce">🔄</div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-green-300 font-pixel">
+                  FREE SWITCH!
+                </div>
+                <div className="text-sm text-white mt-1">
+                  Swap any 2 candies - No moves used!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Automatic Moves Effect Overlay */}
       {showAutoMoveEffect && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
@@ -669,6 +1084,28 @@ export default function GameBoard({
                 selectedCandy?.row === rowIndex &&
                 selectedCandy?.col === colIndex
                   ? "ring-4 ring-white ring-opacity-70 animate-pulse"
+                  : ""
+              }
+              ${
+                showLollipopHammerEffect &&
+                hammerDestroysLeft > 0 &&
+                candy &&
+                candy in CANDY_COLORS &&
+                !hammerDestroyedCandies.some(
+                  (c) => c.row === rowIndex && c.col === colIndex
+                )
+                  ? "ring-4 ring-yellow-400 ring-opacity-90 animate-pulse cursor-crosshair hover:scale-110 hover:ring-yellow-300"
+                  : ""
+              }
+              ${
+                showFreeSwitchEffect &&
+                !freeSwitchUsed &&
+                candy &&
+                candy in CANDY_COLORS
+                  ? selectedCandy?.row === rowIndex &&
+                    selectedCandy?.col === colIndex
+                    ? "ring-4 ring-green-400 ring-opacity-100 animate-pulse cursor-pointer"
+                    : "ring-2 ring-green-300 ring-opacity-60 hover:ring-green-400 hover:ring-opacity-80 cursor-pointer"
                   : ""
               }
               transition-all duration-200
@@ -756,7 +1193,7 @@ export default function GameBoard({
               }}
             ></div>
 
-            {/* Animation effect */}
+            {/* Animation effect - Explode */}
             {animations.some(
               (anim) =>
                 anim.row === rowIndex &&
@@ -783,6 +1220,98 @@ export default function GameBoard({
                     }}
                   />
                 ))}
+              </>
+            )}
+            {/* Animation effect - Gobble (Sweet Teeth) */}
+            {animations.some(
+              (anim) =>
+                anim.row === rowIndex &&
+                anim.col === colIndex &&
+                anim.type === "gobble"
+            ) && (
+              <>
+                <div className="absolute inset-0 bg-orange-500 animate-pulse rounded-full opacity-80"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-3xl animate-bounce">🦷</div>
+                </div>
+                <div className="absolute inset-[-30%] flex items-center justify-center pointer-events-none">
+                  <div className="text-orange-300 text-xl font-bold animate-bounce">
+                    +120
+                  </div>
+                </div>
+                {/* Gobble particle effects */}
+                {[...Array(6)].map((_, i) => {
+                  const angle = (i * 360) / 6;
+                  const distance = 30;
+                  return (
+                    <div
+                      key={i}
+                      className="absolute w-3 h-3 bg-orange-400 rounded-full opacity-70 animate-ping"
+                      style={{
+                        left: "50%",
+                        top: "50%",
+                        transform: `translate(-50%, -50%) translate(${
+                          Math.cos((angle * Math.PI) / 180) * distance
+                        }px, ${
+                          Math.sin((angle * Math.PI) / 180) * distance
+                        }px)`,
+                        animationDelay: `${i * 0.05}s`,
+                        animationDuration: "0.4s",
+                      }}
+                    />
+                  );
+                })}
+              </>
+            )}
+            {/* Animation effect - Hammer (Lollipop Hammer) */}
+            {animations.some(
+              (anim) =>
+                anim.row === rowIndex &&
+                anim.col === colIndex &&
+                anim.type === "hammer"
+            ) && (
+              <>
+                <div className="absolute inset-0 bg-purple-600 animate-pulse rounded-full opacity-90"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-4xl animate-bounce">🔨</div>
+                </div>
+                <div className="absolute inset-[-30%] flex items-center justify-center pointer-events-none">
+                  <div className="text-yellow-300 text-xl font-bold animate-bounce">
+                    +150
+                  </div>
+                </div>
+                {/* Hammer smash particle effects */}
+                {[...Array(8)].map((_, i) => {
+                  const angle = (i * 360) / 8;
+                  const distance = 40;
+                  return (
+                    <div
+                      key={i}
+                      className="absolute w-2 h-2 bg-yellow-400 rounded-full opacity-80"
+                      style={{
+                        left: "50%",
+                        top: "50%",
+                        transform: `translate(-50%, -50%) translate(${
+                          Math.cos((angle * Math.PI) / 180) * distance
+                        }px, ${
+                          Math.sin((angle * Math.PI) / 180) * distance
+                        }px)`,
+                        animation: "fadeOut 0.5s forwards",
+                        animationDelay: `${i * 0.03}s`,
+                      }}
+                    />
+                  );
+                })}
+                {/* Crack effect */}
+                <div className="absolute inset-0 opacity-60">
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      backgroundImage: `radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 70%)`,
+                      clipPath: "polygon(20% 20%, 80% 20%, 60% 80%, 40% 80%)",
+                    }}
+                  ></div>
+                </div>
               </>
             )}
           </div>
