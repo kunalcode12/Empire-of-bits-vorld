@@ -29,6 +29,7 @@ export default function EmailLogin() {
   const [showRedirectLoader, setShowRedirectLoader] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState("");
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
 
   // Add error/success shake
   const [formStatus, setFormStatus] = useState<"idle" | "error" | "success">(
@@ -90,6 +91,7 @@ export default function EmailLogin() {
         });
         playSound("error");
         setFormStatus("error");
+        setShowHelpDialog(true);
       }
     } catch {
       toast({
@@ -100,6 +102,7 @@ export default function EmailLogin() {
       });
       playSound("error");
       setFormStatus("error");
+      setShowHelpDialog(true);
     } finally {
       setLoading(false);
     }
@@ -131,6 +134,7 @@ export default function EmailLogin() {
         });
         playSound("error");
         setFormStatus("error");
+        setShowHelpDialog(true);
       }
     } catch {
       toast({
@@ -141,6 +145,7 @@ export default function EmailLogin() {
       });
       playSound("error");
       setFormStatus("error");
+      setShowHelpDialog(true);
     } finally {
       setLoading(false);
     }
@@ -179,6 +184,97 @@ export default function EmailLogin() {
 
       {/* Audio element for sfx */}
       <audio ref={audioRef} className="hidden" />
+
+      {/* Help dialog for account creation assistance */}
+      <AnimatePresence>
+        {showHelpDialog && (
+          <motion.div
+            className="fixed inset-0 z-[998] bg-black/70 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="relative w-full max-w-md bg-gray-900 border-4 border-yellow-400 p-6 rounded-xl text-white"
+              initial={{ scale: 0.92, y: 14 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 14 }}
+            >
+              <button
+                className="absolute top-2 right-2 text-gray-300 hover:text-white"
+                onClick={() => setShowHelpDialog(false)}
+              >
+                ✕
+              </button>
+              <div className="text-center mb-3">
+                <div
+                  className="text-2xl font-bold glitch-text"
+                  data-text="ACCOUNT REQUIRED"
+                >
+                  ACCOUNT REQUIRED
+                </div>
+                <div className="text-sm text-gray-300 mt-2">
+                  Create your Vorld account first, then sign in here.
+                </div>
+              </div>
+              <div className="bg-black/50 border-2 border-white p-3 rounded-md text-sm mb-4">
+                If you don’t have credentials yet or login fails, please go to:
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  <li>
+                    <a
+                      className="underline text-yellow-300 break-all"
+                      href="https://access.thevorld.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      https://access.thevorld.com/
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="underline text-yellow-300 break-all"
+                      href="https://arena-ioa-frontend.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      https://arena-ioa-frontend.vercel.app/
+                    </a>
+                  </li>
+                </ul>
+                <div className="mt-3 text-gray-300">
+                  Sign up there, then return and log in with the same credentials.
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <a
+                  href="https://access.thevorld.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center arcade-btn bg-[hsl(var(--accent-purple))] border-2 border-[hsl(var(--accent-purple)/0.7)] py-2 px-4 font-bold"
+                  onClick={() => {
+                    setShowHelpDialog(false);
+                    playSound("click");
+                  }}
+                >
+                  Open Vorld Access
+                </a>
+                <a
+                  href="https://arena-ioa-frontend.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center arcade-btn-outline border-2 py-2 px-4 font-bold"
+                  onClick={() => {
+                    setShowHelpDialog(false);
+                    playSound("click");
+                  }}
+                >
+                  Open Arena
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Background overlays & theme */}
       <div className="fixed inset-0 pointer-events-none z-10">

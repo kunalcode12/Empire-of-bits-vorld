@@ -31,6 +31,8 @@ import { ParticlesContainer } from "./particles-container";
 type MonitorEvent = { type: string; data: any; timestamp: Date };
 
 export default function Games() {
+  const [streamUrl, setStreamUrl] = useState("");
+  const [showStreamDialog, setShowStreamDialog] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const levelId = Number.parseInt(searchParams.get("level") || "1");
@@ -175,6 +177,9 @@ export default function Games() {
 
   useEffect(() => {
     arenaServiceRef.current = new ArenaGameService();
+    // Load stream URL from localStorage on mount
+    const existingStream = localStorage.getItem("streamUrl") || "";
+    setStreamUrl(existingStream);
     return () => {
       arenaServiceRef.current?.disconnect();
       arenaServiceRef.current = null;
@@ -660,6 +665,10 @@ export default function Games() {
   const handleStartArena = async () => {
     const arena = arenaServiceRef.current;
     if (!arena) return;
+    if (!streamUrl) {
+      setShowStreamDialog(true);
+      return;
+    }
     setArenaLoader(true);
     try {
       const token =
@@ -669,7 +678,6 @@ export default function Games() {
 
       console.log("Token:", token);
 
-      const streamUrl = "https://twitch.tv/empireofbits";
       const result = await arena.initializeGame(streamUrl, token);
       setArenaLoader(false);
       if (result.success && result.data) {
@@ -1127,19 +1135,55 @@ export default function Games() {
         />
 
         {/* Arena actions */}
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          {/* Stream URL inline control */}
+          <div className="flex items-center gap-2 bg-black/40 border-2 border-purple-700 rounded px-2 py-2">
+            <span className="text-xs text-gray-300">STREAM</span>
+            <input
+              readOnly
+              value={streamUrl || ""}
+              placeholder="Not set"
+              className="bg-transparent text-sm text-yellow-200 placeholder:text-gray-500 outline-none"
+              style={{ width: 220 }}
+            />
+            <Button
+              variant="outline"
+              className="border-purple-400 text-purple-200 hover:bg-purple-900/30"
+              onClick={() => setShowStreamDialog(true)}
+            >
+              Set Stream URL
+            </Button>
+          </div>
           {showArenaButtons && (
             <>
               <Button
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={handleStartArena}
+                className={`${
+                  streamUrl
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                }`}
+                onClick={() => {
+                  if (!streamUrl) {
+                    setShowStreamDialog(true);
+                    return;
+                  }
+                  handleStartArena();
+                }}
               >
                 Play with Vorld
               </Button>
               <Button
                 variant="outline"
-                className="border-blue-400 text-blue-300"
-                onClick={handleStartArena}
+                className={`border-blue-400 ${
+                  streamUrl ? "text-blue-300" : "text-gray-400 cursor-not-allowed"
+                }`}
+                onClick={() => {
+                  if (!streamUrl) {
+                    setShowStreamDialog(true);
+                    return;
+                  }
+                  handleStartArena();
+                }}
               >
                 Arena On
               </Button>
@@ -1308,6 +1352,63 @@ export default function Games() {
           onNextLevel={handleNextLevel}
           onRetry={handleRetryLevel}
         />
+      )}
+      {/* Stream URL Modal */}
+      {showStreamDialog && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-4">
+          <div
+            className="bg-gray-900 border-4 border-white p-6 max-w-md w-full relative mx-auto my-auto"
+            style={{
+              background: "linear-gradient(to bottom, #1a1a1a, #000000)",
+              boxShadow:
+                "0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 0, 255, 0.1)",
+            }}
+          >
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-white"
+              onClick={() => setShowStreamDialog(false)}
+            >
+              ✕
+            </button>
+            <div className="text-center mb-4">
+              <div className="text-2xl font-bold">Set Stream URL</div>
+              <div className="text-sm text-gray-400 mt-1">
+                Enter your Twitch/YouTube stream link
+              </div>
+            </div>
+            <input
+              type="url"
+              placeholder="https://twitch.tv/yourchannel"
+              className="w-full bg-black border-2 border-white px-3 py-2 text-white outline-none focus:border-yellow-400"
+              value={streamUrl}
+              onChange={(e) => setStreamUrl(e.target.value)}
+            />
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <Button
+                variant="outline"
+                className="border-gray-400 text-gray-200"
+                onClick={() => setShowStreamDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-purple-700 hover:bg-purple-800"
+                onClick={() => {
+                  localStorage.setItem("streamUrl", streamUrl || "");
+                  setShowStreamDialog(false);
+                  toast({
+                    title: "Stream URL Saved",
+                    description: streamUrl
+                      ? "Your stream URL has been saved."
+                      : "Stream URL cleared.",
+                  });
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Arena loader overlay */}

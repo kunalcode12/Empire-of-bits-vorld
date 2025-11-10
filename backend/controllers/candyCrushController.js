@@ -46,7 +46,7 @@ const initializeGame = async (req, res, next) => {
 
     // Add game reference to user
     user.games.push({
-      gameType: 'CandyCrush',
+      gameType: 'candycrush',
       gameId: game._id,
     });
 

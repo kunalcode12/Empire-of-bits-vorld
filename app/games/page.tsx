@@ -33,6 +33,8 @@ import { VorldAuthService } from "../../lib/authservice";
 import { ArenaGameService, type GameState } from "@/lib/arenaGameService";
 
 export default function GamesPage() {
+  const [streamUrl, setStreamUrl] = useState("");
+  const [showStreamDialog, setShowStreamDialog] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [walletConnected, setWalletConnected] = useState(false);
@@ -340,10 +342,13 @@ export default function GamesPage() {
       } else {
         const wallet = walletAddress || "";
         const authToken = localStorage.getItem("authToken") || "";
+        const su = localStorage.getItem("streamUrl") || "";
 
         const url = `${game.route}?wallet=${encodeURIComponent(
           wallet
-        )}&authToken=${encodeURIComponent(authToken)}`;
+        )}&authToken=${encodeURIComponent(authToken)}${
+          su ? `&streamUrl=${encodeURIComponent(su)}` : ""
+        }`;
         window.open(url, "_blank");
       }
     } catch (error) {
@@ -370,6 +375,8 @@ export default function GamesPage() {
   const checkAuthentication = async () => {
     try {
       setLoading(true);
+      const existingStream = localStorage.getItem("streamUrl") || "";
+      setStreamUrl(existingStream);
       const profile = await authService.getProfile();
       console.log("profile:", profile);
       if (profile.success) {
@@ -488,83 +495,6 @@ export default function GamesPage() {
         description: "You don't have enough points to sell.",
         variant: "destructive",
         duration: 3000,
-      });
-      playSound("error");
-    }
-  };
-
-  const handlePlayWithVorld = async (game: Game) => {
-    try {
-      // Require authentication
-      if (!isAuthenticated) {
-        setShowAuthModal(true);
-        playSound("error");
-        return;
-      }
-
-      const arena = arenaServiceRef.current;
-      if (!arena) return;
-
-      // Show loading screen
-      setArenaInitializing(true);
-      setArenaInitMessage("INITIALIZING ARENA...");
-
-      const token =
-        (typeof window !== "undefined" && localStorage.getItem("authToken")) ||
-        (typeof window !== "undefined" && localStorage.getItem("token")) ||
-        "";
-
-      // Provide a default stream URL. In production, let streamer configure per game.
-      const streamUrl = "https://twitch.tv/your_channel_name";
-
-      // Simulate progress updates
-      setTimeout(() => {
-        setArenaInitMessage("CONNECTING TO ARENA SERVER...");
-      }, 800);
-
-      setTimeout(() => {
-        setArenaInitMessage("ESTABLISHING WEBSOCKET...");
-      }, 1600);
-
-      const result = await arena.initializeGame(streamUrl, token);
-
-      if (result.success && result.data) {
-        setArenaInitMessage("ARENA READY!");
-        setArenaGameState(result.data);
-
-        // Show success message briefly before navigating
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setArenaInitializing(false);
-
-        toast({
-          title: "Arena Initialized",
-          description: `Game ID: ${result.data.gameId}`,
-          duration: 3500,
-        });
-        playSound("success");
-
-        // Optional: for Candy Crush, navigate to levels page if not already going
-        if (game.title === "Candy Crush") {
-          router.push("/levels-candycrush");
-        }
-      } else {
-        setArenaInitializing(false);
-        toast({
-          title: "Initialization Failed",
-          description: result.error || "Unable to initialize Arena game",
-          variant: "destructive",
-          duration: 3500,
-        });
-        playSound("error");
-      }
-    } catch (e: any) {
-      setArenaInitializing(false);
-      toast({
-        title: "Initialization Error",
-        description: e?.message || "Failed to initialize Arena game",
-        variant: "destructive",
-        duration: 3500,
       });
       playSound("error");
     }
@@ -700,6 +630,26 @@ export default function GamesPage() {
                       </span>
                     </div>
 
+                    {/* Stream URL quick badge */}
+                    <div className="flex items-center gap-2 border-l-2 border-white/20 pl-4 max-w-xs">
+                      <span className="text-xs text-gray-400">STREAM</span>
+                      <span className="text-xs font-bold truncate max-w-[160px]">
+                        {streamUrl || "Not set"}
+                      </span>
+                      <motion.button
+                        className="px-2 py-1 bg-[hsl(var(--accent-purple))] text-white text-xs font-bold rounded-md border-2 border-white"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setShowStreamDialog(true);
+                          playSound("click");
+                        }}
+                        onMouseEnter={() => playSound("hover")}
+                      >
+                        SET
+                      </motion.button>
+                    </div>
+
                     {/* Logout Button */}
                     <motion.button
                       className="px-3 py-1 bg-red-600 text-white text-sm font-bold rounded-md"
@@ -716,6 +666,16 @@ export default function GamesPage() {
                   </div>
                 ) : (
                   <div className="hidden md:flex items-center gap-4">
+                    <AnimatedButton
+                      className="bg-blue-700 text-white px-4 py-3 text-sm font-bold border-3 border-blue-500"
+                      onClick={() => {
+                        setShowStreamDialog(true);
+                        playSound("click");
+                      }}
+                      onHover={() => playSound("hover")}
+                    >
+                      SET STREAM URL
+                    </AnimatedButton>
                     <AnimatedButton
                       className="bg-[hsl(var(--accent-purple))] text-white px-6 py-3 text-lg font-bold border-3 border-[hsl(var(--accent-purple)/0.7)]"
                       onClick={() => {
@@ -1252,6 +1212,26 @@ export default function GamesPage() {
                   </div>
                 </div>
 
+                {/* Stream URL Notice */}
+                {!streamUrl && (
+                  <div className="bg-yellow-900/40 border-2 border-yellow-500 p-2 text-center text-yellow-200 text-sm">
+                    <AlertTriangle className="inline-block h-4 w-4 mr-1" />
+                    Stream URL not set. To play with Vorld-enabled games, please add your Stream URL.
+                    <div className="mt-2">
+                      <AnimatedButton
+                        className="px-3 py-1 border-2 border-yellow-400 text-yellow-200"
+                        onClick={() => {
+                          setShowStreamDialog(true);
+                          playSound("click");
+                        }}
+                        onHover={() => playSound("hover")}
+                      >
+                        ADD STREAM URL
+                      </AnimatedButton>
+                    </div>
+                  </div>
+                )}
+
                 {points < selectedGame.pointsRequired && (
                   <div className="bg-red-900/30 border-2 border-red-500 p-2 text-center text-red-300 text-sm">
                     <AlertTriangle className="inline-block h-4 w-4 mr-1" />
@@ -1276,20 +1256,29 @@ export default function GamesPage() {
 
                 <AnimatedButton
                   className={`py-2 px-4 text-base font-bold border-2 ${
-                    points >= selectedGame.pointsRequired
+                    points >= selectedGame.pointsRequired && (!!streamUrl || selectedGame.title === "Candy Crush")
                       ? "arcade-btn bg-green-600 border-green-500 text-white"
                       : "bg-gray-700 border-gray-600 text-gray-400 cursor-not-allowed"
                   }`}
                   onClick={() => {
-                    if (points >= selectedGame.pointsRequired) {
+                    if (
+                      points >= selectedGame.pointsRequired &&
+                      (!!streamUrl || selectedGame.title === "Candy Crush")
+                    ) {
                       handlePlayGame(selectedGame);
                       playSound("click");
                     } else {
+                      if (!streamUrl && selectedGame.title !== "Candy Crush") {
+                        setShowStreamDialog(true);
+                      }
                       playSound("error");
                     }
                   }}
                   onHover={() => {
-                    if (points >= selectedGame.pointsRequired) {
+                    if (
+                      points >= selectedGame.pointsRequired &&
+                      (!!streamUrl || selectedGame.title === "Candy Crush")
+                    ) {
                       playSound("hover");
                     }
                   }}
@@ -1298,25 +1287,95 @@ export default function GamesPage() {
                 </AnimatedButton>
               </div>
 
-              {/* Vorld Arena initialization */}
-              <div className="mt-3">
-                <AnimatedButton
-                  className="w-full arcade-btn bg-blue-600 border-2 border-blue-500 text-white py-3 px-4 text-base font-bold"
-                  onClick={() => {
-                    handlePlayWithVorld(selectedGame);
-                    playSound("click");
-                  }}
-                  onHover={() => playSound("hover")}
-                >
-                  PLAY WITH VORLD
-                </AnimatedButton>
-              </div>
-
               {/* Bottom note */}
               <p className="text-xs text-gray-500 mt-4 text-center">
                 {selectedGame.pointsRequired} points will be deducted from your
                 account when you start the game
               </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Stream URL Modal */}
+      <AnimatePresence>
+        {showStreamDialog && (
+          <motion.div
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-gray-900 border-4 border-white p-6 max-w-md w-full relative mx-auto my-auto"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                background: "linear-gradient(to bottom, #1a1a1a, #000000)",
+                boxShadow:
+                  "0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 0, 255, 0.1)",
+              }}
+            >
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                onClick={() => {
+                  setShowStreamDialog(false);
+                  playSound("click");
+                }}
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <div className="text-center mb-4">
+                <h2
+                  className="text-2xl font-bold glitch-text"
+                  data-text="SET STREAM URL"
+                >
+                  SET STREAM URL
+                </h2>
+              </div>
+              <div className="space-y-4 mb-4">
+                <label className="block text-sm text-gray-300">
+                  Enter your Stream URL (Twitch, YouTube etc.)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://twitch.tv/yourchannel"
+                  className="w-full bg-black border-3 border-white px-3 py-2 text-white outline-none focus:border-yellow-400"
+                  value={streamUrl}
+                  onChange={(e) => setStreamUrl(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <AnimatedButton
+                  className="arcade-btn-outline border-2 py-2 px-4 text-base font-bold"
+                  onClick={() => {
+                    setShowStreamDialog(false);
+                    playSound("click");
+                  }}
+                  onHover={() => playSound("hover")}
+                >
+                  CANCEL
+                </AnimatedButton>
+                <AnimatedButton
+                  className="arcade-btn bg-[hsl(var(--accent-purple))] border-2 border-[hsl(var(--accent-purple)/0.7)] py-2 px-4 text-base font-bold text-white"
+                  onClick={() => {
+                    localStorage.setItem("streamUrl", streamUrl || "");
+                    toast({
+                      title: "Stream URL Saved",
+                      description: streamUrl
+                        ? "Your stream URL has been saved."
+                        : "Stream URL cleared.",
+                      duration: 2500,
+                    });
+                    setShowStreamDialog(false);
+                    playSound("success");
+                  }}
+                  onHover={() => playSound("hover")}
+                >
+                  SAVE
+                </AnimatedButton>
+              </div>
             </motion.div>
           </motion.div>
         )}

@@ -7,10 +7,9 @@ const mongoose = require('mongoose');
 const initializeGame = async (req, res, next) => {
   try {
     const { userId } = req.body;
-    
-
     // Check if user exists
     const user = await User.findOne({ userId });
+
     if (!user) {
       return next(new ErrorResponse(`User not found with id ${userId}`, 404));
     }
