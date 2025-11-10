@@ -122,8 +122,8 @@ export default function GamesPage() {
       maxPlayers: 6,
       prize: 0.18,
       players: 4,
-      status: "live",
-      route: "https://platformer-game-delta.vercel.app/",
+      status: "coming-soon",
+      route: "/coming-soon",
     },
     {
       id: 77,
@@ -146,8 +146,8 @@ export default function GamesPage() {
       maxPlayers: 1,
       prize: 0.3,
       players: 0,
-      status: "live",
-      route: "https://car.empireofbits.fun/",
+      status: "coming-soon",
+      route: "/coming-soon",
     },
     {
       id: 5,
@@ -161,42 +161,42 @@ export default function GamesPage() {
       status: "coming-soon",
       route: "/coming-soon",
     },
-    {
-      id: 6,
-      title: "Puzzle Master",
-      category: "Puzzle",
-      image: "/images/comingSoon.jpeg",
-      pointsRequired: 40,
-      maxPlayers: 10,
-      prize: 0.2,
-      players: 0,
-      status: "coming-soon",
-      route: "/coming-soon",
-    },
-    {
-      id: 7,
-      title: "Strategy Wars",
-      category: "Strategy",
-      image: "/images/comingSoon.jpeg",
-      pointsRequired: 60,
-      maxPlayers: 8,
-      prize: 0.35,
-      players: 0,
-      status: "coming-soon",
-      route: "/coming-soon",
-    },
-    {
-      id: 8,
-      title: "Neon Fighter",
-      category: "Fighting",
-      image: "/images/comingSoon.jpeg",
-      pointsRequired: 55,
-      maxPlayers: 6,
-      prize: 0.28,
-      players: 0,
-      status: "coming-soon",
-      route: "/coming-soon",
-    },
+    // {
+    //   id: 6,
+    //   title: "Puzzle Master",
+    //   category: "Puzzle",
+    //   image: "/images/comingSoon.jpeg",
+    //   pointsRequired: 40,
+    //   maxPlayers: 10,
+    //   prize: 0.2,
+    //   players: 0,
+    //   status: "coming-soon",
+    //   route: "/coming-soon",
+    // },
+    // {
+    //   id: 7,
+    //   title: "Strategy Wars",
+    //   category: "Strategy",
+    //   image: "/images/comingSoon.jpeg",
+    //   pointsRequired: 60,
+    //   maxPlayers: 8,
+    //   prize: 0.35,
+    //   players: 0,
+    //   status: "coming-soon",
+    //   route: "/coming-soon",
+    // },
+    // {
+    //   id: 8,
+    //   title: "Neon Fighter",
+    //   category: "Fighting",
+    //   image: "/images/comingSoon.jpeg",
+    //   pointsRequired: 55,
+    //   maxPlayers: 6,
+    //   prize: 0.28,
+    //   players: 0,
+    //   status: "coming-soon",
+    //   route: "/coming-soon",
+    // },
   ];
 
   const filteredGames = games
@@ -1216,7 +1216,8 @@ export default function GamesPage() {
                 {!streamUrl && (
                   <div className="bg-yellow-900/40 border-2 border-yellow-500 p-2 text-center text-yellow-200 text-sm">
                     <AlertTriangle className="inline-block h-4 w-4 mr-1" />
-                    Stream URL not set. To play with Vorld-enabled games, please add your Stream URL.
+                    Stream URL not set. To play with Vorld-enabled games, please
+                    add your Stream URL.
                     <div className="mt-2">
                       <AnimatedButton
                         className="px-3 py-1 border-2 border-yellow-400 text-yellow-200"
@@ -1256,7 +1257,8 @@ export default function GamesPage() {
 
                 <AnimatedButton
                   className={`py-2 px-4 text-base font-bold border-2 ${
-                    points >= selectedGame.pointsRequired && (!!streamUrl || selectedGame.title === "Candy Crush")
+                    points >= selectedGame.pointsRequired &&
+                    (!!streamUrl || selectedGame.title === "Candy Crush")
                       ? "arcade-btn bg-green-600 border-green-500 text-white"
                       : "bg-gray-700 border-gray-600 text-gray-400 cursor-not-allowed"
                   }`}
