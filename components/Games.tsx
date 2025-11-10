@@ -1175,7 +1175,9 @@ export default function Games() {
               <Button
                 variant="outline"
                 className={`border-blue-400 ${
-                  streamUrl ? "text-blue-300" : "text-gray-400 cursor-not-allowed"
+                  streamUrl
+                    ? "text-blue-300"
+                    : "text-gray-400 cursor-not-allowed"
                 }`}
                 onClick={() => {
                   if (!streamUrl) {
