@@ -2,8 +2,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_AUTH_SERVER_URL || "http://localhost:3001/api";
-const VORLD_APP_ID = process.env.NEXT_PUBLIC_VORLD_APP_ID || "";
+  process.env.NEXT_PUBLIC_AUTH_SERVER_URL || "https://vorld-auth.onrender.com/api";
+const VORLD_APP_ID = process.env.NEXT_PUBLIC_VORLD_APP_ID || "app_mgs5crer_51c332b3";
 
 async function sha256(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);

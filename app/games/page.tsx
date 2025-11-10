@@ -222,7 +222,7 @@ export default function GamesPage() {
       const walletAddress = localStorage.getItem("walletAddress");
 
       // Make API call to your backend
-      const response = await fetch("http://localhost:3001/api/v1/users", {
+      const response = await fetch("https://backend.empireofbits.fun/api/v1/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -253,7 +253,7 @@ export default function GamesPage() {
   ) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/v1/users/${userId}/points`,
+        `https://backend.empireofbits.fun/api/v1/users/${userId}/points`,
         {
           method: "PUT",
           headers: {

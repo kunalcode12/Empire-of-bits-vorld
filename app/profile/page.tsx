@@ -159,7 +159,7 @@ export default function ProfilePage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:3001/api/v1/users/${userId}/games`
+        `https://backend.empireofbits.fun/api/v1/users/${userId}/games`
       );
       const data = await response.json();
       console.log("Game data fetched:", data);
