@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSolanaWallet } from "@/components/solana-wallet-provider";
 import PointsManager from "@/components/points-manager";
 import WalletStatus from "@/components/wallet-status";
@@ -20,50 +20,108 @@ export default function PointsExchangePage() {
   const { connected, walletAddress } = useSolanaWallet();
   const [userPoints, setUserPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  // Fetch user points from local storage or API
-  useEffect(() => {
-    const fetchUserPoints = async () => {
-      setIsLoading(true);
+  const updateUserPointsInBackend = useCallback(
+    async (delta: number) => {
+      if (!walletAddress || delta === 0) {
+        return;
+      }
+
       try {
-        // In a real app, you would fetch this from your API
-        // For demo purposes, we'll use localStorage
-        if (walletAddress) {
-          const storedPoints = localStorage.getItem(`points_${walletAddress}`);
-          if (storedPoints) {
-            setUserPoints(Number.parseInt(storedPoints));
-          } else {
-            // Initialize with 0 points
-            localStorage.setItem(`points_${walletAddress}`, "0");
-            setUserPoints(0);
+        setIsSyncing(true);
+        const operation = delta > 0 ? "add" : "deduct";
+
+        const response = await fetch(
+          `https://backend.empireofbits.fun/api/v1/users/${walletAddress}/points`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              points: Math.abs(delta),
+              operation,
+            }),
           }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || "Failed to update points in backend");
         }
       } catch (error) {
-        console.error("Error fetching points:", error);
+        console.error("Error updating points in backend:", error);
+        throw error;
       } finally {
-        setIsLoading(false);
+        setIsSyncing(false);
       }
-    };
+    },
+    [walletAddress]
+  );
 
+  const fetchUserPoints = useCallback(async () => {
+    if (!walletAddress) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        "https://backend.empireofbits.fun/api/v1/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: walletAddress,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUserPoints(data.data.points);
+      } else {
+        console.error("Failed to fetch user points:", data.message);
+        setUserPoints(0);
+      }
+    } catch (error) {
+      console.error("Error fetching points:", error);
+      setUserPoints(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletAddress]);
+
+  useEffect(() => {
     if (connected && walletAddress) {
       fetchUserPoints();
     } else {
       setUserPoints(0);
       setIsLoading(false);
     }
-  }, [connected, walletAddress]);
+  }, [connected, walletAddress, fetchUserPoints]);
 
   // Update user points
   const handlePointsUpdate = (newPoints: number) => {
+    const delta = newPoints - userPoints;
     setUserPoints(newPoints);
-    if (walletAddress) {
-      localStorage.setItem(`points_${walletAddress}`, newPoints.toString());
+
+    if (delta !== 0) {
+      updateUserPointsInBackend(delta).catch(() => {
+        // Revert to previous points on failure
+        setUserPoints(userPoints);
+      });
     }
   };
 
   return (
     <>
-      <Header />
+      <Header userPoints={userPoints} onPointsUpdate={handlePointsUpdate} />
 
       <div className="container mx-auto py-12 px-4 mt-28">
         <motion.div
@@ -122,7 +180,7 @@ export default function PointsExchangePage() {
                           <div className="flex items-center">
                             <Coins className="h-6 w-6 mr-2 text-[hsl(var(--accent-yellow))]" />
                             <span className="text-2xl font-bold">
-                              {userPoints}
+                              {isLoading || isSyncing ? "..." : userPoints}
                             </span>
                             <span className="ml-2 text-foreground/70">
                               points

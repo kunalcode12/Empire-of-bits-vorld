@@ -214,6 +214,7 @@ export default function Header({
 
   // Buy points
   const handleBuyPoints = async () => {
+  
     if (!walletConnected || !walletAddress) {
       toast({
         title: "Wallet not connected",
@@ -231,6 +232,8 @@ export default function Header({
         walletAddress,
         sendTransaction
       );
+
+     
 
       if (result.success) {
         // Update points in UI
@@ -407,12 +410,12 @@ export default function Header({
       icon: <Sparkles className="w-4 h-4" />,
       href: "/points-exchange",
     },
-    {
-      name: "vesting",
-      label: "VESTING",
-      icon: <Trophy className="w-4 h-4" />,
-      href: "/vesting",
-    },
+    // {
+    //   name: "vesting",
+    //   label: "VESTING",
+    //   icon: <Trophy className="w-4 h-4" />,
+    //   href: "/vesting",
+    // },
     {
       name: "profile",
       label: "PROFILE",

@@ -1,5 +1,4 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js"
-import { storeWalletInRedis } from "./redis-service"
 
 const POINTS_PER_TRANSACTION = 150
 const SOL_PER_TRANSACTION = 0.01
@@ -34,12 +33,6 @@ export class PointsService {
 
       const txId = await sendTransaction(TREASURY_WALLET, SOL_PER_TRANSACTION)
 
-      try {
-        await storeWalletInRedis(walletAddress)
-      } catch (redisError) {
-        console.error("Redis storage error (non-critical):", redisError)
-      }
-
       return {
         success: true,
         txId,
@@ -63,12 +56,6 @@ export class PointsService {
       }
 
       const txId = await receiveTransaction(TREASURY_WALLET, SOL_PER_TRANSACTION)
-
-      try {
-        await storeWalletInRedis(walletAddress)
-      } catch (redisError) {
-        console.error("Redis storage error (non-critical):", redisError)
-      }
 
       return {
         success: true,
