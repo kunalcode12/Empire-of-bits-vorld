@@ -8,6 +8,12 @@ interface RetroWelcomePopupProps {
 function RetroWelcomePopup({ onClose }: RetroWelcomePopupProps) {
   const [audioPlayed, setAudioPlayed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (audioRef.current && !audioPlayed) {
@@ -17,13 +23,26 @@ function RetroWelcomePopup({ onClose }: RetroWelcomePopupProps) {
         .then(() => setAudioPlayed(true))
         .catch((err) => console.error("Failed to play audio:", err));
     }
+  }, [audioPlayed]);
 
-    const timer = setTimeout(() => {
-      onClose();
-    }, 4000);
+  useEffect(() => {
+    timeoutRef.current = setTimeout(() => {
+      onCloseRef.current();
+    }, 5000);
 
-    return () => clearTimeout(timer);
-  }, [onClose, audioPlayed]);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleStartClick = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    onCloseRef.current();
+  };
 
   return (
     <motion.div
@@ -129,7 +148,7 @@ function RetroWelcomePopup({ onClose }: RetroWelcomePopupProps) {
           className="bg-neon-red text-white px-8 py-3 font-bold text-xl border-2 border-white hover:bg-red-700 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={onClose}
+          onClick={handleStartClick}
         >
           START PLAYING!
         </motion.button>
