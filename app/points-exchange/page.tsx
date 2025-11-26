@@ -12,15 +12,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Coins, AlertTriangle, Info } from "lucide-react";
+import { Coins, AlertTriangle, Info, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
+import { WalletSelectModal } from "@/components/wallet-select-modal";
+import Link from "next/link";
 
 export default function PointsExchangePage() {
   const { connected, walletAddress } = useSolanaWallet();
   const [userPoints, setUserPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   const updateUserPointsInBackend = useCallback(
     async (delta: number) => {
@@ -121,9 +123,29 @@ export default function PointsExchangePage() {
 
   return (
     <>
-      <Header userPoints={userPoints} onPointsUpdate={handlePointsUpdate} />
+      {/* Back button */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link href="/">
+          <motion.button
+            className="flex items-center gap-2 px-4 py-2 bg-background/80 backdrop-blur-md border border-foreground/10 rounded-full hover:border-foreground/30 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </motion.button>
+        </Link>
+      </div>
 
-      <div className="container mx-auto py-12 px-4 mt-28">
+      {/* Wallet Select Modal */}
+      {!connected && (
+        <WalletSelectModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+        />
+      )}
+
+      <div className="container mx-auto py-12 px-4 mt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -143,7 +165,7 @@ export default function PointsExchangePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <WalletStatus />
+              <WalletStatus onConnectClick={() => setShowWalletModal(true)} />
             </motion.div>
           </div>
 

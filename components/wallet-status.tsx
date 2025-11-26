@@ -6,8 +6,12 @@ import { Wallet, ExternalLink } from "lucide-react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function WalletStatus() {
-  const { walletAddress, connected, balance, connectWallet, disconnectWallet } = useSolanaWallet()
+interface WalletStatusProps {
+  onConnectClick?: () => void;
+}
+
+export default function WalletStatus({ onConnectClick }: WalletStatusProps) {
+  const { walletAddress, connected, balance, disconnectWallet } = useSolanaWallet()
 
   // Format wallet address for display
   const formatAddress = (address: string | null) => {
@@ -69,7 +73,7 @@ export default function WalletStatus() {
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                onClick={() => connectWallet()}
+                onClick={() => onConnectClick?.()}
                 className="w-full bg-[hsl(var(--accent-purple))] hover:bg-[hsl(var(--accent-purple))/80] text-white"
               >
                 <Wallet className="mr-2 h-4 w-4" />

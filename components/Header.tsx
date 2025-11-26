@@ -70,18 +70,8 @@ export default function Header({
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      title: "Tournament Starting",
-      message: "WEEKEND WARRIOR tournament starts in 30 minutes!",
-    },
-    {
-      id: 2,
-      title: "New Game Added",
-      message: "CRYPTO PUZZLER is now available to play!",
-    },
-    {
-      id: 3,
-      title: "Bonus Tokens",
-      message: "You received 50 bonus tokens for daily login!",
+      title: "Welcome to Empire of Bits",
+      message: "Welcome to Empire of Bits, the ultimate platform for playing games and earning points.",
     },
   ]);
 
@@ -142,15 +132,18 @@ export default function Header({
       console.log("Wallet Address:", walletAddress);
 
       // Make API call to your backend
-      const response = await fetch("https://backend.empireofbits.fun/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: walletAddress,
-        }),
-      });
+      const response = await fetch(
+        "https://backend.empireofbits.fun/api/v1/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: walletAddress,
+          }),
+        }
+      );
 
       const data = await response.json();
       console.log(data);
@@ -214,7 +207,6 @@ export default function Header({
 
   // Buy points
   const handleBuyPoints = async () => {
-  
     if (!walletConnected || !walletAddress) {
       toast({
         title: "Wallet not connected",
@@ -232,8 +224,6 @@ export default function Header({
         walletAddress,
         sendTransaction
       );
-
-     
 
       if (result.success) {
         // Update points in UI
@@ -289,6 +279,26 @@ export default function Header({
       setIsProcessing(false);
       setShowBuyDialog(false);
     }
+  };
+
+  const ensureWalletConnected = () => {
+    const storedWalletAddress =
+      typeof window !== "undefined"
+        ? localStorage.getItem("walletAddress")
+        : null;
+
+    if (!storedWalletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to continue.",
+        variant: "destructive",
+        className: "bg-red-600 text-white border-red-700",
+      });
+      setShowWalletModal(true);
+      return false;
+    }
+
+    return true;
   };
 
   // Sell points
@@ -374,10 +384,9 @@ export default function Header({
 
   const checkAuthentication = async (intendedHref: string) => {
     try {
-    
       const profile = await authService.getProfile();
       console.log("profile:", profile);
-      
+
       if (profile.success) {
         // User is authenticated, navigate to intended page
         window.location.href = intendedHref;
@@ -388,7 +397,7 @@ export default function Header({
     } catch (error) {
       console.error("Authentication check failed:", error);
       window.location.href = "/signup";
-    } 
+    }
   };
 
   const navItems = [
@@ -627,7 +636,7 @@ export default function Header({
                 )}
 
                 {/* Theme Toggle */}
-                <ThemeToggle />
+                {/* <ThemeToggle /> */}
 
                 {/* Notifications */}
                 <div className="relative">
@@ -790,51 +799,63 @@ export default function Header({
 
             {/* Navigation bar - desktop */}
             <nav className="hidden md:block">
-  <div className="flex justify-center">
-    <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
-      <ul className="flex space-x-1 relative">
-        {navItems.map((item) => (
-          <li key={item.name}>
-            <Link
-              href={item.href}
-              className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                activeNavItem === item.name
-                  ? "text-white"
-                  : "text-foreground/70 hover:text-foreground"
-              }`}
-              onMouseEnter={() => playSound("hover")}
-              onClick={(e) => {
-                // Check if navigation requires authentication
-                if (item.name === "profile" || item.name === "games") {
-                  e.preventDefault(); // Prevent default navigation
-                  checkAuthentication(item.href);
-                } else {
-                  setActiveNavItem(item.name);
-                  playSound("click");
-                }
-              }}
-            >
-              {activeNavItem === item.name && (
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
-                  layoutId="activeNavBackground"
-                  initial={false}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                />
-              )}
-              {item.icon}
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </div>
-</nav>
+              <div className="flex justify-center">
+                <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
+                  <ul className="flex space-x-1 relative">
+                    {navItems.map((item) => (
+                      <li key={item.name}>
+                        <Link
+                          href={item.href}
+                          className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                            activeNavItem === item.name
+                              ? "text-white"
+                              : "text-foreground/70 hover:text-foreground"
+                          }`}
+                          onMouseEnter={() => playSound("hover")}
+                          onClick={(e) => {
+                            // Check if navigation requires authentication
+                            if (
+                              item.name === "profile" ||
+                              item.name === "games"
+                            ) {
+                              e.preventDefault(); // Prevent default navigation
+
+                              if (
+                                (item.name === "games" ||
+                                  item.name === "profile") &&
+                                !ensureWalletConnected()
+                              ) {
+                                return;
+                              }
+
+                              checkAuthentication(item.href);
+                            } else {
+                              setActiveNavItem(item.name);
+                              playSound("click");
+                            }
+                          }}
+                        >
+                          {activeNavItem === item.name && (
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
+                              layoutId="activeNavBackground"
+                              initial={false}
+                              transition={{
+                                type: "spring",
+                                stiffness: 300,
+                                damping: 30,
+                              }}
+                            />
+                          )}
+                          {item.icon}
+                          <span className="font-medium">{item.label}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </nav>
           </div>
         </div>
 

@@ -42,7 +42,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("featured");
   const [showWalletModal, setShowWalletModal] = useState(false);
-  
+
   // Use actual wallet provider
   const {
     walletAddress,
@@ -265,7 +265,6 @@ export default function Home() {
     }
   };
 
-
   // useEffect(() => {
   //   (async () => {
   //     try {
@@ -280,7 +279,50 @@ export default function Home() {
 
   // Wallet connection is now handled by WalletSelectModal component
 
+  const ensureWalletConnected = () => {
+    const storedWalletAddress =
+      typeof window !== "undefined"
+        ? localStorage.getItem("walletAddress")
+        : null;
+
+    if (!storedWalletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to continue.",
+        variant: "destructive",
+        className: "bg-red-600 text-white border-red-700",
+      });
+      setShowWalletModal(true);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleProtectedNavigation = async (href: string) => {
+    if (!ensureWalletConnected()) {
+      return;
+    }
+
+    try {
+      const profile = await authService.getProfile();
+      console.log("profile:", profile);
+      if (profile.success) {
+        window.location.href = href;
+      } else {
+        window.location.href = "/signup";
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      window.location.href = "/signup";
+    }
+  };
+
   const handlePlayGamesClick = async () => {
+    if (!ensureWalletConnected()) {
+      return;
+    }
+
     try {
       // Check if user is authenticated
       const profile = await authService.getProfile();
@@ -1151,6 +1193,10 @@ export default function Home() {
                   href="/games"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/games");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   Games
@@ -1158,7 +1204,7 @@ export default function Home() {
               </li>
               <li>
                 <Link
-                  href="/tournaments"
+                  href="/coming-soon"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
                 >
@@ -1171,6 +1217,10 @@ export default function Home() {
                   href="/points-exchange"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/points-exchange");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   Points Exchange
@@ -1181,6 +1231,10 @@ export default function Home() {
                   href="/profile"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/profile");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   Profile
@@ -1253,7 +1307,6 @@ export default function Home() {
             &copy; {new Date().getFullYear()} Empire of Bits. All rights
             reserved.
           </p>
-          
         </div>
       </footer>
     </div>

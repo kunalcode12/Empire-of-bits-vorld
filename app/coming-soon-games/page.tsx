@@ -225,7 +225,7 @@ export default function ComingSoonPage() {
 
       {/* Back button */}
       <button
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/games")}
         className="absolute top-8 left-8 flex items-center justify-center bg-button-gradient p-4 rounded-md text-xl border-2 border-purple-500 z-20 transition-all duration-300 hover:scale-105 hover:rotate-1 cosmic-button"
         aria-label="Back to games"
       >

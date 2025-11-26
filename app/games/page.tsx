@@ -123,7 +123,7 @@ export default function GamesPage() {
       prize: 0.18,
       players: 4,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
     {
       id: 77,
@@ -147,7 +147,7 @@ export default function GamesPage() {
       prize: 0.3,
       players: 0,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
     {
       id: 5,
@@ -159,7 +159,7 @@ export default function GamesPage() {
       prize: 0.3,
       players: 0,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
     // {
     //   id: 6,
@@ -222,15 +222,18 @@ export default function GamesPage() {
       const walletAddress = localStorage.getItem("walletAddress");
 
       // Make API call to your backend
-      const response = await fetch("https://backend.empireofbits.fun/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: walletAddress,
-        }),
-      });
+      const response = await fetch(
+        "https://backend.empireofbits.fun/api/v1/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: walletAddress,
+          }),
+        }
+      );
 
       const data = await response.json();
       console.log(data);
@@ -372,6 +375,32 @@ export default function GamesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const walletAddress = localStorage.getItem("walletAddress");
+        const profile = await authService.getProfile();
+        
+        if (walletAddress && !profile.success) {
+          // Has wallet but not authenticated, redirect to signup
+          router.push("/signup");
+        } else if (!walletAddress && profile.success) {
+          // No wallet but authenticated, redirect to home
+          router.push("/");
+        } else if (!walletAddress && !profile.success) {
+          // Neither wallet nor authenticated, redirect to home
+          router.push("/");
+        }
+      } catch {
+        // On error, check wallet address only
+        const walletAddress = localStorage.getItem("walletAddress");
+        if (!walletAddress) {
+          router.push("/");
+        }
+      }
+    })();
+  }, [router]);
+
   const checkAuthentication = async () => {
     try {
       setLoading(true);
@@ -386,6 +415,9 @@ export default function GamesPage() {
         await fetchUserPoints();
       } else {
         setIsAuthenticated(false);
+
+
+        
         setUserProfile(null);
       }
     } catch (error) {
@@ -1069,7 +1101,7 @@ export default function GamesPage() {
                         : "COMING SOON"}
                     </ParticleButton>
                   ) : (
-                    <Link href={"/coming-soon"}>
+                    <Link href={"/coming-soon-games"}>
                       <ParticleButton
                         className={`arcade-btn text-white px-5 py-3 w-full border-3 text-lg ${
                           game.status === "coming-soon"
