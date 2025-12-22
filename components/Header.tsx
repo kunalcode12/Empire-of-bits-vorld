@@ -426,12 +426,12 @@ export default function Header({
     icon: <Coins className="w-4 h-4" />,
     href: "/token-portfolio",
   },
-  {
-    name: "vesting",
-    label: "VESTING",
-    icon: <Trophy className="w-4 h-4" />,
-    href: "/vesting",
-  },
+  // {
+  //   name: "vesting",
+  //   label: "VESTING",
+  //   icon: <Trophy className="w-4 h-4" />,
+  //   href: "/vesting",
+  // },
   {
     name: "profile",
     label: "PROFILE",
