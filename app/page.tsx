@@ -42,7 +42,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("featured");
   const [showWalletModal, setShowWalletModal] = useState(false);
-  
+
   // Use actual wallet provider
   const {
     walletAddress,
@@ -265,7 +265,6 @@ export default function Home() {
     }
   };
 
-
   // useEffect(() => {
   //   (async () => {
   //     try {
@@ -280,7 +279,50 @@ export default function Home() {
 
   // Wallet connection is now handled by WalletSelectModal component
 
+  const ensureWalletConnected = () => {
+    const storedWalletAddress =
+      typeof window !== "undefined"
+        ? localStorage.getItem("walletAddress")
+        : null;
+
+    if (!storedWalletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to continue.",
+        variant: "destructive",
+        className: "bg-red-600 text-white border-red-700",
+      });
+      setShowWalletModal(true);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleProtectedNavigation = async (href: string) => {
+    if (!ensureWalletConnected()) {
+      return;
+    }
+
+    try {
+      const profile = await authService.getProfile();
+      console.log("profile:", profile);
+      if (profile.success) {
+        window.location.href = href;
+      } else {
+        window.location.href = "/signup";
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      window.location.href = "/signup";
+    }
+  };
+
   const handlePlayGamesClick = async () => {
+    if (!ensureWalletConnected()) {
+      return;
+    }
+
     try {
       // Check if user is authenticated
       const profile = await authService.getProfile();
@@ -810,7 +852,7 @@ export default function Home() {
                   </div>
 
                   <div className="text-center mt-12">
-                    <Link href="/leaderboard">
+                    <Link href="/coming-soon">
                       <AnimatedButton
                         className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
                         onHover={() => playSound("hover")}
@@ -1089,12 +1131,15 @@ export default function Home() {
             </p>
             <div className="flex space-x-5">
               <motion.a
-                href="#"
+                href="https://x.com/empireofbits"
                 className="w-12 h-12 border-3 border-foreground flex items-center justify-center hover:border-[hsl(var(--accent-yellow))] transition-colors arcade-btn-large"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
                 onMouseEnter={() => playSound("hover")}
                 onClick={() => playSound("click")}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow Empire of Bits on X (Twitter)"
               >
                 <svg
                   className="h-6 w-6"
@@ -1106,12 +1151,15 @@ export default function Home() {
                 </svg>
               </motion.a>
               <motion.a
-                href="#"
+                href="https://github.com/kunalcode12/Empire-of-bits-vorld"
                 className="w-12 h-12 border-3 border-foreground flex items-center justify-center hover:border-[hsl(var(--accent-yellow))] transition-colors arcade-btn-large"
                 whileHover={{ scale: 1.1, rotate: -5 }}
                 whileTap={{ scale: 0.95 }}
                 onMouseEnter={() => playSound("hover")}
                 onClick={() => playSound("click")}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View Empire of Bits on GitHub"
               >
                 <svg
                   className="h-6 w-6"
@@ -1119,38 +1167,13 @@ export default function Home() {
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </motion.a>
-              <motion.a
-                href="#"
-                className="w-12 h-12 border-3 border-foreground flex items-center justify-center hover:border-[hsl(var(--accent-yellow))] transition-colors arcade-btn-large"
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                whileTap={{ scale: 0.95 }}
-                onMouseEnter={() => playSound("hover")}
-                onClick={() => playSound("click")}
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 011.93 5.314c-.281-.054-3.101-.629-5.943-.271-.065-.141-.12-.293-.184-.445a25.416 25.416 0 00-.564-1.236c3.145-1.28 4.577-3.124 4.761-3.362zM12 3.475c2.17 0 4.154.813 5.662 2.148-.152.216-1.443 1.941-4.48 3.08-1.399-2.57-2.95-4.675-3.189-5A8.687 8.687 0 0112 3.475zm-3.633.803a53.896 53.896 0 013.167 4.935c-3.992 1.063-7.517 1.04-7.896 1.04a8.581 8.581 0 014.729-5.975zM3.453 12.01v-.26c.37.01 4.512.065 8.775-1.215.25.477.477.965.694 1.453-.109.033-.228.065-.336.098-4.404 1.42-6.747 5.303-6.942 5.629a8.522 8.522 0 01-2.19-5.705zM12 20.547a8.482 8.482 0 01-5.239-1.8c.152-.315 1.888-3.656 6.703-5.337.022-.01.033-.01.054-.022a35.318 35.318 0 011.823 6.475 8.4 8.4 0 01-3.341.684zm4.761-1.465c-.086-.52-.542-3.015-1.659-6.084 2.679-.423 5.022.271 5.314.369a8.468 8.468 0 01-3.655 5.715z"
-                    clipRule="evenodd"
-                  />
+                  <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.111.82-.261.82-.58 0-.287-.01-1.044-.016-2.05-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.73.083-.73 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.468-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 013.004-.404c1.02.004 2.047.138 3.004.404 2.29-1.552 3.296-1.23 3.296-1.23.655 1.653.243 2.874.12 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.604-.015 2.896-.015 3.289 0 .322.216.697.825.579C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12z" />
                 </svg>
               </motion.a>
             </div>
           </div>
 
-          <div>
+          <div className="mt-6 md:mt-8">
             <h3 className="text-xl font-bold mb-6 border-b-2 border-gray-800 pb-3">
               NAVIGATION
             </h3>
@@ -1170,6 +1193,10 @@ export default function Home() {
                   href="/games"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/games");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   Games
@@ -1177,7 +1204,7 @@ export default function Home() {
               </li>
               <li>
                 <Link
-                  href="/tournaments"
+                  href="/coming-soon"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
                 >
@@ -1187,28 +1214,36 @@ export default function Home() {
               </li>
               <li>
                 <Link
-                  href="/marketplace"
+                  href="/points-exchange"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/points-exchange");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Marketplace
+                  Points Exchange
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/leaderboard"
+                  href="/profile"
                   className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedNavigation("/profile");
+                  }}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Leaderboard
+                  Profile
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div>
+          {/* <div>
             <h3 className="text-xl font-bold mb-6 border-b-2 border-gray-800 pb-3">
               RESOURCES
             </h3>
@@ -1264,17 +1299,13 @@ export default function Home() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t-2 border-gray-800 text-center">
           <p className="text-lg mb-3 text-gray-500">
             &copy; {new Date().getFullYear()} Empire of Bits. All rights
             reserved.
-          </p>
-          <p className="text-base text-gray-600">
-            Cryptocurrency betting may not be available in all jurisdictions.
-            Users are responsible for complying with local laws.
           </p>
         </div>
       </footer>

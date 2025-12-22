@@ -132,4 +132,57 @@ export class VorldAuthService {
   logout(): void {
     localStorage.removeItem("authToken");
   }
+
+  // Passwordless Email OTP Authentication
+
+  // Step 1: Send OTP to user's email
+  async sendEmailOTP(email: string) {
+    try {
+      const response = await this.api.post("/auth/send-email-otp", {
+        email,
+      });
+
+      return {
+        success: true,
+        message: response.data.message || "OTP sent successfully",
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || "Failed to send OTP",
+      };
+    }
+  }
+
+  // Step 2: Verify OTP and login (creates user if new)
+  async loginWithEmailOTP(email: string, otp: string) {
+    try {
+      const response = await this.api.post("/auth/verify-email-otp-login", {
+        email,
+        otp,
+      });
+
+      // Store tokens in cookies
+      if (response.data.data?.accessToken) {
+        Cookies.set("accessToken", response.data.data.accessToken);
+        Cookies.set("refreshToken", response.data.data.refreshToken);
+      }
+
+      // Also store in localStorage for compatibility with existing code
+      if (response.data.data?.accessToken) {
+        localStorage.setItem("authToken", response.data.data.accessToken);
+        localStorage.setItem("refreshToken", response.data.data.refreshToken);
+      }
+
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || "OTP verification failed",
+      };
+    }
+  }
 }

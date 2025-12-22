@@ -79,34 +79,10 @@ export default function GamesPage() {
   const games = [
     {
       id: 1,
-      title: "Candy Crush",
-      image: "/images/candyCrush.jpg",
-      category: "Arcade",
-      pointsRequired: 50,
-      maxPlayers: 8,
-      prize: 0.25,
-      players: 6,
-      status: "live",
-      route: "/levels-candycrush",
-    },
-    {
-      id: 2,
-      title: "Battle Ship",
-      category: "Fighting",
-      image: "/images/battleShip.jpg",
-      pointsRequired: 50,
-      maxPlayers: 2,
-      prize: 0.15,
-      players: 2,
-      status: "live",
-      route: "https://battleship.empireofbits.fun/",
-    },
-    {
-      id: 3,
       title: "Space Invaders",
       category: "Adventure",
       image: "/images/spaceInvaders.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 4,
       prize: 0.12,
       players: 1,
@@ -114,23 +90,60 @@ export default function GamesPage() {
       route: "https://spaceinvaders.empireofbits.fun/",
     },
     {
+      id: 2,
+      title: "Chess Empire",
+      category: "Puzzle",
+      image: "/images/chess.jpeg",
+      pointsRequired: 15,
+      maxPlayers: 2,
+      prize: 0.2,
+      players: 0,
+      status: "live",
+      route: "https://chess.empireofbits.fun/",
+    },
+    {
+      id: 3,
+      title: "Candy Crush",
+      image: "/images/candyCrush.jpg",
+      category: "Arcade",
+      pointsRequired: 15,
+      maxPlayers: 8,
+      prize: 0.25,
+      players: 6,
+      status: "live",
+      route: "/levels-candycrush",
+    },
+    {
       id: 4,
+      title: "Battle Ship",
+      category: "Fighting",
+      image: "/images/battleShip.jpg",
+      pointsRequired: 15,
+      maxPlayers: 2,
+      prize: 0.15,
+      players: 2,
+      status: "live",
+      route: "https://battleship.empireofbits.fun/",
+    },
+
+    {
+      id: 5,
       title: "Platformer",
       category: "Action",
       image: "/images/platformer.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 6,
       prize: 0.18,
       players: 4,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
     {
       id: 77,
       title: "Axe Ascend",
       category: "3D and VR",
       image: "/images/axeAscend.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 4,
       prize: 0.3,
       players: 3,
@@ -142,15 +155,15 @@ export default function GamesPage() {
       title: "RC Crypto Car",
       category: "3D and VR",
       image: "/images/rcCrypto.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 1,
       prize: 0.3,
       players: 0,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
     {
-      id: 5,
+      id: 6,
       title: "Retro Racer",
       category: "Racing",
       image: "/images/comingSoon.jpeg",
@@ -159,20 +172,9 @@ export default function GamesPage() {
       prize: 0.3,
       players: 0,
       status: "coming-soon",
-      route: "/coming-soon",
+      route: "/coming-soon-games",
     },
-    // {
-    //   id: 6,
-    //   title: "Puzzle Master",
-    //   category: "Puzzle",
-    //   image: "/images/comingSoon.jpeg",
-    //   pointsRequired: 40,
-    //   maxPlayers: 10,
-    //   prize: 0.2,
-    //   players: 0,
-    //   status: "coming-soon",
-    //   route: "/coming-soon",
-    // },
+
     // {
     //   id: 7,
     //   title: "Strategy Wars",
@@ -222,15 +224,18 @@ export default function GamesPage() {
       const walletAddress = localStorage.getItem("walletAddress");
 
       // Make API call to your backend
-      const response = await fetch("https://backend.empireofbits.fun/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: walletAddress,
-        }),
-      });
+      const response = await fetch(
+        "https://backend.empireofbits.fun/api/v1/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: walletAddress,
+          }),
+        }
+      );
 
       const data = await response.json();
       console.log(data);
@@ -372,6 +377,32 @@ export default function GamesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const walletAddress = localStorage.getItem("walletAddress");
+        const profile = await authService.getProfile();
+
+        if (walletAddress && !profile.success) {
+          // Has wallet but not authenticated, redirect to signup
+          router.push("/signup");
+        } else if (!walletAddress && profile.success) {
+          // No wallet but authenticated, redirect to home
+          router.push("/");
+        } else if (!walletAddress && !profile.success) {
+          // Neither wallet nor authenticated, redirect to home
+          router.push("/");
+        }
+      } catch {
+        // On error, check wallet address only
+        const walletAddress = localStorage.getItem("walletAddress");
+        if (!walletAddress) {
+          router.push("/");
+        }
+      }
+    })();
+  }, [router]);
+
   const checkAuthentication = async () => {
     try {
       setLoading(true);
@@ -386,6 +417,7 @@ export default function GamesPage() {
         await fetchUserPoints();
       } else {
         setIsAuthenticated(false);
+
         setUserProfile(null);
       }
     } catch (error) {
@@ -1069,7 +1101,7 @@ export default function GamesPage() {
                         : "COMING SOON"}
                     </ParticleButton>
                   ) : (
-                    <Link href={"/coming-soon"}>
+                    <Link href={"/coming-soon-games"}>
                       <ParticleButton
                         className={`arcade-btn text-white px-5 py-3 w-full border-3 text-lg ${
                           game.status === "coming-soon"

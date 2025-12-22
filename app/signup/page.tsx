@@ -25,6 +25,7 @@ export default function EmailLogin() {
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showRedirectLoader, setShowRedirectLoader] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
@@ -49,6 +50,94 @@ export default function EmailLogin() {
       audioRef.current
         .play()
         .catch((e) => console.log("Audio play prevented:", e));
+    }
+  };
+
+  // Step 1: Send OTP to email
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    playSound("click");
+    setFormStatus("idle");
+    try {
+      const result = await authService.sendEmailOTP(email);
+      if (result.success) {
+        setOtpSent(true);
+        setShowOtp(true);
+        toast({
+          title: "OTP Sent!",
+          description: "Please check your email for the verification code.",
+          duration: 5000,
+        });
+        playSound("success");
+        setFormStatus("success");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to Send OTP",
+          description: result.error,
+          duration: 5000,
+        });
+        playSound("error");
+        setFormStatus("error");
+        setShowHelpDialog(true);
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Failed to Send OTP",
+        description: "An unexpected error occurred.",
+        duration: 5000,
+      });
+      playSound("error");
+      setFormStatus("error");
+      setShowHelpDialog(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP and login
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    playSound("click");
+    setFormStatus("idle");
+    try {
+      const result = await authService.loginWithEmailOTP(email, otp);
+      if (result.success) {
+        toast({
+          title: "Login Successful!",
+          description: "Welcome to Empire of Bits!",
+          duration: 3000,
+        });
+        playSound("success");
+        setFormStatus("success");
+        setShowRedirectLoader(true);
+        setTimeout(() => router.push("/games"), 200);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Verification Failed",
+          description: result.error,
+          duration: 5000,
+        });
+        playSound("error");
+        setFormStatus("error");
+        setShowHelpDialog(true);
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Verification Failed",
+        description: "An unexpected error occurred.",
+        duration: 5000,
+      });
+      playSound("error");
+      setFormStatus("error");
+      setShowHelpDialog(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,8 +251,11 @@ export default function EmailLogin() {
   useEffect(() => {
     (async () => {
       try {
+        const walletAddress = localStorage.getItem("walletAddress");
         const user = await authService.getProfile();
-        if (user.success) router.push("/games");
+        if (user.success && walletAddress) {
+          router.push("/games");
+        }
       } catch {}
     })();
   }, [router]);
@@ -375,15 +467,17 @@ export default function EmailLogin() {
             >
               {showOtp
                 ? "Enter the 6-digit code sent to your email"
-                : "Access the ultimate Web3 arcade gaming platform"}
+                : otpSent
+                ? "Check your email for the OTP code"
+                : "Enter your email to receive a verification code"}
             </motion.p>
 
             {/* Animated form; shake on error, pulse on success */}
             <AnimatePresence mode="wait">
               {!showOtp ? (
                 <motion.form
-                  key="login"
-                  onSubmit={handleLogin}
+                  key="email"
+                  onSubmit={handleSendOTP}
                   className="space-y-6 relative z-30"
                   initial={{ opacity: 0, x: -15 }}
                   exit={{ opacity: 0, x: 15 }}
@@ -410,42 +504,31 @@ export default function EmailLogin() {
                         placeholder="Enter your email"
                         required
                         autoFocus
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-lg font-bold mb-2 text-yellow-200 font-pixel tracking-wider">
-                      PASSWORD
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-yellow-100/70 z-30" />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-14 pr-4 py-4 rounded-xl bg-black text-white border-4 border-yellow-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 text-lg font-mono outline-none z-20"
-                        placeholder="Enter your password"
-                        minLength={4}
-                        required
+                        disabled={otpSent}
                       />
                     </div>
                   </div>
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full mt-2 bg-[hsl(var(--accent-purple))] text-white py-5 text-xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group arcade-btn rounded-lg shadow-xl hover:bg-[hsl(var(--accent-yellow))] hover:text-black focus:bg-[hsl(var(--accent-yellow))] focus:text-black"
+                    disabled={loading || otpSent}
+                    className="w-full mt-2 bg-[hsl(var(--accent-purple))] text-white py-5 text-xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group arcade-btn rounded-lg shadow-xl hover:bg-[hsl(var(--accent-yellow))] hover:text-black focus:bg-[hsl(var(--accent-yellow))] focus:text-black disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ letterSpacing: "0.1ch" }}
                   >
                     <span className="relative z-10 flex items-center justify-center font-pixel">
                       {loading ? (
                         <>
                           <Zap className="mr-3 h-6 w-6 animate-spin" />
-                          SIGNING IN…
+                          SENDING OTP…
+                        </>
+                      ) : otpSent ? (
+                        <>
+                          <Shield className="mr-3 h-6 w-6" />
+                          OTP SENT
                         </>
                       ) : (
                         <>
-                          <Shield className="mr-3 h-6 w-6" />
-                          SIGN IN
+                          <Mail className="mr-3 h-6 w-6" />
+                          SEND OTP
                           <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
                         </>
                       )}
@@ -455,7 +538,7 @@ export default function EmailLogin() {
               ) : (
                 <motion.form
                   key="otp"
-                  onSubmit={handleOtpVerification}
+                  onSubmit={handleVerifyOTP}
                   className="space-y-6 relative z-30"
                   initial={{ opacity: 0, x: 15 }}
                   exit={{ opacity: 0, x: -15 }}
