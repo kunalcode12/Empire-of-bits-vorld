@@ -990,10 +990,10 @@ export default function GamesPage() {
               {categories.map((category) => (
                 <AnimatedButton
                   key={category}
-                  className={`px-6 py-3 border-3 text-lg ${
+                  className={`px-6 py-3 border-3 text-lg text-white ${
                     selectedCategory === category
-                      ? "border-yellow-400 bg-yellow-400 bg-opacity-20 text-yellow-400"
-                      : "border-white hover:border-yellow-400"
+                      ? "border-yellow-400 bg-yellow-400 bg-opacity-30 text-black font-bold"
+                      : "border-white hover:border-yellow-400 hover:text-yellow-400"
                   }`}
                   onClick={() => {
                     setSelectedCategory(category);
