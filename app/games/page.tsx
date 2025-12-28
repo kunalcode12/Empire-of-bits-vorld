@@ -429,17 +429,30 @@ export default function GamesPage() {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
-    setUserProfile(null);
-    setPoints(0);
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-      duration: 3000,
-    });
-    playSound("success");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setPoints(0);
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+        duration: 3000,
+      });
+      playSound("success");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still clear local state even if API call fails
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setPoints(0);
+      toast({
+        title: "Logged Out",
+        description: "You have been logged out locally.",
+        duration: 3000,
+      });
+    }
   };
 
   const handleSignIn = () => {
