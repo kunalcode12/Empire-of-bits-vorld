@@ -7,6 +7,12 @@ const VORLD_APP_ID = process.env.NEXT_PUBLIC_VORLD_APP_ID || "app_mgs5crer_51c33
 
 // Generate or retrieve device ID for token binding
 function getDeviceId(): string {
+  // Check if we're in a browser environment
+  if (typeof window === "undefined") {
+    // Return a temporary device ID for SSR
+    return `device_ssr_${Date.now()}`;
+  }
+  
   let deviceId = localStorage.getItem("vorld_device_id");
   if (!deviceId) {
     // Generate a unique device ID
@@ -38,9 +44,12 @@ export class VorldAuthService {
     // Add request interceptor to include auth token and device ID
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem("authToken");
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        // Only access localStorage in browser environment
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("authToken");
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
         // Ensure device ID is always included
         config.headers["x-vorld-device-id"] = getDeviceId();
@@ -77,13 +86,18 @@ export class VorldAuthService {
           this.isRefreshing = true;
 
           try {
+            // Only access localStorage in browser environment
+            if (typeof window === "undefined") {
+              throw new Error("Cannot refresh token during SSR");
+            }
+            
             const refreshToken = localStorage.getItem("refreshToken");
             if (!refreshToken) {
               throw new Error("No refresh token available");
             }
 
             const newTokens = await this.refreshToken(refreshToken);
-            if (newTokens.success && newTokens.data) {
+            if (newTokens.success && newTokens.data && typeof window !== "undefined") {
               // Update tokens
               localStorage.setItem("authToken", newTokens.data.accessToken);
               localStorage.setItem("refreshToken", newTokens.data.refreshToken);
@@ -100,8 +114,10 @@ export class VorldAuthService {
             }
           } catch (refreshError) {
             // Refresh failed, clear tokens and process queue with error
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("refreshToken");
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("authToken");
+              localStorage.removeItem("refreshToken");
+            }
             this.processQueue(refreshError, null);
             return Promise.reject(refreshError);
           } finally {
@@ -175,6 +191,14 @@ export class VorldAuthService {
 
   async getProfile() {
     try {
+      // Only access localStorage in browser environment
+      if (typeof window === "undefined") {
+        return {
+          success: false,
+          error: "Cannot get profile during SSR",
+        };
+      }
+      
       const token = localStorage.getItem("authToken");
       console.log("Auth token found:", !!token);
       console.log("Token value:", token ? `${token.slice(0, 10)}...` : "null");
@@ -212,6 +236,9 @@ export class VorldAuthService {
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
+    if (typeof window === "undefined") {
+      return false;
+    }
     const token = localStorage.getItem("authToken");
     return !!token;
   }
@@ -219,6 +246,10 @@ export class VorldAuthService {
   // Logout user - calls API to revoke tokens
   async logout(): Promise<void> {
     try {
+      if (typeof window === "undefined") {
+        return;
+      }
+      
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) {
         try {
@@ -233,11 +264,13 @@ export class VorldAuthService {
     } catch (error) {
       console.warn("Error during logout:", error);
     } finally {
-      // Always clear local tokens
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("refreshToken");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
+      // Always clear local tokens (only in browser)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("refreshToken");
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+      }
     }
   }
 
@@ -306,7 +339,7 @@ export class VorldAuthService {
       }
 
       // Also store in localStorage for compatibility with existing code
-      if (response.data.data?.accessToken) {
+      if (response.data.data?.accessToken && typeof window !== "undefined") {
         localStorage.setItem("authToken", response.data.data.accessToken);
         localStorage.setItem("refreshToken", response.data.data.refreshToken);
       }
@@ -363,7 +396,7 @@ export class VorldAuthService {
       );
 
       // Update stored tokens
-      if (response.data.data?.accessToken) {
+      if (response.data.data?.accessToken && typeof window !== "undefined") {
         localStorage.setItem("authToken", response.data.data.accessToken);
         localStorage.setItem("refreshToken", response.data.data.refreshToken);
         
@@ -380,11 +413,13 @@ export class VorldAuthService {
         data: response.data.data,
       };
     } catch (error: any) {
-      // If refresh fails, clear tokens
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("refreshToken");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
+      // If refresh fails, clear tokens (only in browser)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("refreshToken");
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+      }
 
       return {
         success: false,
