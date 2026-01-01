@@ -25,13 +25,6 @@ interface AddTokenDialogProps {
 
 const POPULAR_TOKENS = [
   {
-    name: "Jupiter",
-    symbol: "JUP",
-    address: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
-    description: "Jupiter Exchange Token",
-    color: "from-purple-500 to-pink-500",
-  },
-  {
     name: "USDC",
     symbol: "USDC",
     address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",

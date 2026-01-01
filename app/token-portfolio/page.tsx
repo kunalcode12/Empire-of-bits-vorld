@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSolanaWallet } from "@/components/solana-wallet-provider";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { JupiterPriceService, TokenPrice } from "@/lib/jupiter-price-service";
 import { TokenBalanceService, TokenBalance } from "@/lib/token-balance-service";
 import TokenPortfolioCard from "@/components/token-portfolio-card";
 import PortfolioSummary from "@/components/portfolio-summary";
@@ -24,11 +23,10 @@ interface TokenInfo {
   symbol: string;
   balance: number;
   decimals: number;
-  price: TokenPrice | null;
   logoURI?: string;
 }
 
-type SortOption = "value" | "name" | "change24h" | "balance";
+type SortOption = "name" | "balance";
 
 export default function TokenPortfolioPage() {
   const { connected, walletAddress } = useSolanaWallet();
@@ -37,10 +35,9 @@ export default function TokenPortfolioPage() {
   const [filteredTokens, setFilteredTokens] = useState<TokenInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [solPrice, setSolPrice] = useState(0);
   const [manualTokens, setManualTokens] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("value");
+  const [sortBy, setSortBy] = useState<SortOption>("name");
   const { toast } = useToast();
 
   // Load manual tokens from localStorage
@@ -60,22 +57,7 @@ export default function TokenPortfolioPage() {
     }
   }, [walletAddress]);
 
-  // Fetch SOL price
-  useEffect(() => {
-    const fetchSOLPrice = async () => {
-      try {
-        const price = await JupiterPriceService.getSOLPrice();
-        setSolPrice(price);
-      } catch (error) {
-        console.error("Error fetching SOL price:", error);
-      }
-    };
-    fetchSOLPrice();
-    const interval = setInterval(fetchSOLPrice, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fetch token balances and prices
+  // Fetch token balances
   const fetchPortfolio = useCallback(async () => {
     if (!connected || !walletAddress || !connection) {
       setTokens([]);
@@ -96,34 +78,17 @@ export default function TokenPortfolioPage() {
         walletAddress
       );
 
-      // Combine SOL and SPL tokens with manual tokens
-      const allTokenAddresses = [
-        "So11111111111111111111111111111111111111112", // SOL
-        ...tokenBalances.map((tb) => tb.mintAddress),
-        ...manualTokens,
-      ];
-
-      // Remove duplicates
-      const uniqueAddresses = Array.from(new Set(allTokenAddresses));
-
-      // Fetch prices for all tokens
-      const prices = await JupiterPriceService.getTokenPrices(uniqueAddresses);
-
       // Build token info array
       const tokenInfos: TokenInfo[] = [];
 
       // Add SOL (always show if balance > 0 or manually added)
       if (solBalanceInSol > 0 || manualTokens.includes("So11111111111111111111111111111111111111112")) {
-        const solPriceData = prices.get(
-          "So11111111111111111111111111111111111111112"
-        );
         tokenInfos.push({
           mintAddress: "So11111111111111111111111111111111111111112",
           name: "Solana",
           symbol: "SOL",
           balance: solBalanceInSol,
           decimals: 9,
-          price: solPriceData || null,
           logoURI:
             "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
         });
@@ -131,19 +96,12 @@ export default function TokenPortfolioPage() {
 
       // Add SPL tokens
       for (const tokenBalance of tokenBalances) {
-        const price = prices.get(tokenBalance.mintAddress);
-        const metadata = await JupiterPriceService.getTokenMetadata(
-          tokenBalance.mintAddress
-        );
-
         tokenInfos.push({
           mintAddress: tokenBalance.mintAddress,
-          name: metadata?.name || "Unknown Token",
-          symbol: metadata?.symbol || "UNKNOWN",
+          name: "Unknown Token",
+          symbol: "UNKNOWN",
           balance: tokenBalance.balance,
           decimals: tokenBalance.decimals,
-          price: price || null,
-          logoURI: metadata?.logoURI,
         });
       }
 
@@ -153,10 +111,6 @@ export default function TokenPortfolioPage() {
           !tokenInfos.find((t) => t.mintAddress === mintAddress) &&
           mintAddress !== "So11111111111111111111111111111111111111112"
         ) {
-          const price = prices.get(mintAddress);
-          const metadata = await JupiterPriceService.getTokenMetadata(
-            mintAddress
-          );
           const balance = await TokenBalanceService.getTokenBalance(
             connection,
             walletAddress,
@@ -165,12 +119,10 @@ export default function TokenPortfolioPage() {
 
           tokenInfos.push({
             mintAddress,
-            name: metadata?.name || "Unknown Token",
-            symbol: metadata?.symbol || "UNKNOWN",
+            name: "Unknown Token",
+            symbol: "UNKNOWN",
             balance: balance?.balance || 0,
-            decimals: balance?.decimals || metadata?.decimals || 9,
-            price: price || null,
-            logoURI: metadata?.logoURI,
+            decimals: balance?.decimals || 9,
           });
         }
       }
@@ -211,26 +163,8 @@ export default function TokenPortfolioPage() {
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case "value":
-          const aValue = a.price
-            ? a.price.vsTokenSymbol === "SOL"
-              ? a.balance * a.price.price * solPrice
-              : a.balance * a.price.price
-            : 0;
-          const bValue = b.price
-            ? b.price.vsTokenSymbol === "SOL"
-              ? b.balance * b.price.price * solPrice
-              : b.balance * b.price.price
-            : 0;
-          return bValue - aValue;
-
         case "name":
           return a.symbol.localeCompare(b.symbol);
-
-        case "change24h":
-          const aChange = a.price?.priceChange24h || -Infinity;
-          const bChange = b.price?.priceChange24h || -Infinity;
-          return bChange - aChange;
 
         case "balance":
           return b.balance - a.balance;
@@ -241,7 +175,7 @@ export default function TokenPortfolioPage() {
     });
 
     setFilteredTokens(filtered);
-  }, [tokens, searchQuery, sortBy, solPrice]);
+  }, [tokens, searchQuery, sortBy]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -290,16 +224,8 @@ export default function TokenPortfolioPage() {
   };
 
   const calculateTotalValue = (): number => {
-    return tokens.reduce((total, token) => {
-      if (token.price) {
-        const tokenPriceInUSD =
-          token.price.vsTokenSymbol === "SOL"
-            ? token.price.price * solPrice
-            : token.price.price;
-        return total + token.balance * tokenPriceInUSD;
-      }
-      return total;
-    }, 0);
+    // Price calculation removed - Jupiter service no longer available
+    return 0;
   };
 
   return (
@@ -329,7 +255,7 @@ export default function TokenPortfolioPage() {
                   Token Portfolio
                 </h1>
                 <p className="text-xl text-foreground/70">
-                  Track your Solana token holdings with real-time prices powered by Jupiter
+                  Track your Solana token holdings
                 </p>
               </div>
               {connected && (
@@ -377,9 +303,7 @@ export default function TokenPortfolioPage() {
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
                     className="pl-10 pr-8 h-12 text-lg border-3 border-foreground bg-background/50 backdrop-blur-sm rounded-md appearance-none cursor-pointer"
                   >
-                    <option value="value">Sort by Value</option>
                     <option value="name">Sort by Name</option>
-                    <option value="change24h">Sort by 24h Change</option>
                     <option value="balance">Sort by Balance</option>
                   </select>
                 </div>
@@ -473,12 +397,6 @@ export default function TokenPortfolioPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   <AnimatePresence mode="popLayout">
                     {filteredTokens.map((token, index) => {
-                      const usdValue = token.price
-                        ? token.price.vsTokenSymbol === "SOL"
-                          ? token.balance * token.price.price * solPrice
-                          : token.balance * token.price.price
-                        : 0;
-
                       return (
                         <motion.div
                           key={token.mintAddress}
@@ -492,8 +410,6 @@ export default function TokenPortfolioPage() {
                             tokenName={token.name}
                             tokenSymbol={token.symbol}
                             balance={token.balance}
-                            price={token.price}
-                            usdValue={usdValue}
                             logoURI={token.logoURI}
                             isLoading={isLoading}
                             onRefresh={fetchPortfolio}
