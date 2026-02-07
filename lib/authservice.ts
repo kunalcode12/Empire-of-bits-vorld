@@ -1,9 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_AUTH_SERVER_URL || "https://auth.thevorld.com/api";
-const VORLD_APP_ID = process.env.NEXT_PUBLIC_VORLD_APP_ID || "app_mgs5crer_51c332b3";
+const API_BASE_URL = "https://auth.thevorld.com/api/v1";
+const VORLD_APP_ID =  "app_mgs5crer_51c332b3";
 
 // Generate or retrieve device ID for token binding
 function getDeviceId(): string {
