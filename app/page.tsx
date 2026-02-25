@@ -29,6 +29,7 @@ import { ParticleButton } from "@/components/particle-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useTheme } from "@/components/theme-provider";
 import { useToast } from "@/components/ui/use-toast";
+import Header from "@/components/Header";
 import RetroWelcomePopup from "@/components/retroWelcomePopup";
 import RetroGameCompletionPopup from "@/components/GameComplitionPopup";
 import { VorldAuthService } from "../lib/authservice";
@@ -390,6 +391,9 @@ export default function Home() {
           <div className="w-full h-full border-3 border-current rotate-45 animate-pulse"></div>
         </motion.div>
       )}
+
+      {/* Sticky Header */}
+      <Header userPoints={userPoints} onPointsUpdate={handlePointsUpdate} />
 
       {/* Mobile Navigation Menu */}
       <AnimatePresence>
