@@ -12,7 +12,6 @@ import {
   Sparkles,
   Trophy,
   CircleUserRound,
-  Coins,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -420,12 +419,12 @@ export default function Header({
     icon: <Sparkles className="w-4 h-4" />,
     href: "/points-exchange",
   },
-  {
-    name: "portfolio",
-    label: "PORTFOLIO",
-    icon: <Coins className="w-4 h-4" />,
-    href: "/token-portfolio",
-  },
+  // {
+  //   name: "portfolio",
+  //   label: "PORTFOLIO",
+  //   icon: <Coins className="w-4 h-4" />,
+  //   href: "/token-portfolio",
+  // },
   // {
   //   name: "vesting",
   //   label: "VESTING",
