@@ -419,6 +419,18 @@ export default function Header({
     icon: <Sparkles className="w-4 h-4" />,
     href: "/points-exchange",
   },
+  // {
+  //   name: "portfolio",
+  //   label: "PORTFOLIO",
+  //   icon: <Coins className="w-4 h-4" />,
+  //   href: "/token-portfolio",
+  // },
+  // {
+  //   name: "vesting",
+  //   label: "VESTING",
+  //   icon: <Trophy className="w-4 h-4" />,
+  //   href: "/vesting",
+  // },
   {
     name: "profile",
     label: "PROFILE",
