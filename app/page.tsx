@@ -18,7 +18,6 @@ import {
   Coins,
   BarChart3,
   Award,
-  Clock,
   Sparkles,
 } from "lucide-react";
 import { GameCard } from "@/components/game-card";
@@ -595,6 +594,37 @@ export default function Home() {
                 </button>
               </motion.div>
             )}
+
+            <motion.div
+              className="mt-10 md:mt-12 max-w-4xl mx-auto px-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.7 }}
+            >
+              <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-r from-[hsl(var(--accent-purple))/10] via-background/80 to-[hsl(var(--accent-yellow))/10] px-5 py-5 md:px-8 md:py-6 shadow-[0_10px_35px_rgba(124,58,237,0.10)] backdrop-blur-md">
+                <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+
+                <p className="text-center text-lg md:text-2xl font-semibold tracking-tight leading-relaxed text-foreground/90">
+                  Fast matches. Fair competition. Rewards worth your time.
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5 text-sm md:text-base">
+                  <span className="rounded-full border border-[hsl(var(--accent-purple))/30] bg-[hsl(var(--accent-purple))/8] px-3.5 py-1.5 text-foreground/90">
+                    No long waiting lobbies
+                  </span>
+                  <span className="rounded-full border border-[hsl(var(--accent-yellow))/35] bg-[hsl(var(--accent-yellow))/8] px-3.5 py-1.5 text-foreground/90">
+                    Skill-first gameplay
+                  </span>
+                  <span className="rounded-full border border-[hsl(var(--accent-green))/35] bg-[hsl(var(--accent-green))/10] px-3.5 py-1.5 text-foreground/90">
+                    Real reward progression
+                  </span>
+                </div>
+
+                <p className="mt-4 text-center text-sm md:text-base text-foreground/70 italic">
+                  Loved by 300+ gamers
+                </p>
+              </div>
+            </motion.div>
           </div>
 
         </section>
@@ -679,8 +709,7 @@ export default function Home() {
                         onHover={() => playSound("hover")}
                         onClick={() => playSound("click")}
                       >
-                        VIEW ALL GAMES
-                        <ArrowRight className="ml-2 h-5 w-5" />
+                        VIEW ALL GAMES<ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
                       </AnimatedButton>
                     </Link>
                   </div>
@@ -838,10 +867,8 @@ export default function Home() {
                   Choose Your Challenge
                 </h3>
                 <p className="text-lg text-foreground/70">
-                  Select from a lineup of classic arcade games, each with a
-                  modern twist of Sol stakes. Place your bets, compete against
-                  other players, and relive the thrill of retro gaming with a
-                  Web3 edge.
+                  Select from a lineup of classic arcade games. Place your bets, compete against
+                  other players, and have a the thrill of retro gaming.
                 </p>
               </motion.div>
 
@@ -854,11 +881,9 @@ export default function Home() {
                   3
                 </div>
                 <Coins className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
-                <h3 className="text-2xl font-bold mb-4">WIN CRYPTO</h3>
+                <h3 className="text-2xl font-bold mb-4">WIN POINTS</h3>
                 <p className="text-lg text-foreground/70">
-                  Win matches, top the leaderboards, and watch yourself grow
-                  with every victory. Earn an exclusive NFT as you dominate the
-                  arcade and build your empire of bits.
+                  Win matches, top the leaderboards, and watch yourself grow with every victory.
                 </p>
               </motion.div>
             </div>
@@ -894,29 +919,15 @@ export default function Home() {
                       LIVE
                     </div>
 
-                    <div className="absolute bottom-3 left-3 bg-background/80 px-3 py-1.5 text-sm font-bold">
-                      <div className="flex items-center">
-                        <Coins className="h-4 w-4 mr-2 text-[hsl(var(--accent-yellow))]" />
-                        PRIZE POOL: 0.{Math.floor(Math.random() * 90) + 10} SOL
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-3 right-3 bg-background/80 px-3 py-1.5 text-sm font-bold">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2" />
-                        {Math.floor(Math.random() * 10) + 2}:
-                        {Math.floor(Math.random() * 60)
-                          .toString()
-                          .padStart(2, "0")}{" "}
-                        LEFT
-                      </div>
-                    </div>
-
                     <Image
-                      src={`/images/games${stream}.jpeg`}
+                      src={
+                        stream === 1
+                          ? "/images/candyCrush.jpg"
+                          : "/images/chess.jpeg"
+                      }
                       width={500}
                       height={300}
-                      alt={`Game ${stream}`}
+                      alt={stream === 1 ? "Candy Crush" : "Chess"}
                       className="object-cover w-full h-full"
                     />
                   </div>
@@ -924,7 +935,7 @@ export default function Home() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-2xl font-bold flex items-center">
-                        {stream === 1 ? "CRYPTO RACER" : "PIXEL WARRIORS"}
+                        {stream === 1 ? "CANDY CRUSH" : "CHESS"}
                         {stream === 1 && (
                           <span className="ml-3 inline-block px-2 py-1 bg-[hsl(var(--accent-green))] text-black text-sm font-bold">
                             POPULAR
@@ -933,16 +944,19 @@ export default function Home() {
                       </h3>
                       <p className="text-lg text-foreground/70 flex items-center mt-2">
                         <Users className="h-4 w-4 mr-2" />
-                        {stream === 1 ? "8" : "2"} PLAYERS • ROUND{" "}
-                        {Math.floor(Math.random() * 5) + 1}
+                        {stream === 1 ? "Single Player" : "Two Player"}
                       </p>
                     </div>
-                    <AnimatedButton
-                      className="bg-[hsl(var(--accent-purple))] border-3 border-[hsl(var(--accent-purple)/0.7)] px-5 py-3 text-lg text-white"
+                    <a
+                      href="https://www.twitch.tv/empireofbits"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={() => playSound("click")}
                     >
-                      SPECTATE
-                    </AnimatedButton>
+                      <AnimatedButton className="bg-[hsl(var(--accent-purple))] border-3 border-[hsl(var(--accent-purple)/0.7)] px-5 py-3 text-lg text-white">
+                        SPECTATE
+                      </AnimatedButton>
+                    </a>
                   </div>
                 </motion.div>
               ))}

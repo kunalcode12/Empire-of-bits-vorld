@@ -817,27 +817,9 @@ export default function Header({
                             : "text-foreground/70 hover:text-foreground"
                         }`}
                         onMouseEnter={() => playSound("hover")}
-                        onClick={(e) => {
-                          // Check if navigation requires authentication
-                          if (
-                            item.name === "profile" ||
-                            item.name === "games"
-                          ) {
-                            e.preventDefault(); // Prevent default navigation
-
-                            if (
-                              (item.name === "games" ||
-                                item.name === "profile") &&
-                              !ensureWalletConnected()
-                            ) {
-                              return;
-                            }
-
-                            checkAuthentication(item.href);
-                          } else {
-                            setActiveNavItem(item.name);
-                            playSound("click");
-                          }
+                        onClick={() => {
+                          setActiveNavItem(item.name);
+                          playSound("click");
                         }}
                       >
                         {activeNavItem === item.name && (
