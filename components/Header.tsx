@@ -473,8 +473,8 @@ export default function Header({
         ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
           scrolled
-            ? "py-2 backdrop-blur-xl border-b border-foreground/10 bg-background/70"
-            : "py-4 bg-transparent"
+            ? "-translate-y-full opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100 py-4 bg-transparent"
         }`}
       >
         {/* Animated accent line */}
