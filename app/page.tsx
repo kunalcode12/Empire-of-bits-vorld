@@ -257,6 +257,10 @@ export default function Home() {
   }, [toast]);
 
   const playSound = (sound: string) => {
+    if (sound === "hover") {
+      return;
+    }
+
     if (audioRef.current) {
       audioRef.current.src = `/sounds/${sound}.mp3`;
       audioRef.current
