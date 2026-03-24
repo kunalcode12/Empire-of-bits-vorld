@@ -280,7 +280,7 @@ export default function Home() {
   }, [toast]);
 
   const playSound = (sound: string) => {
-    if (sound === "hover") {
+    if (sound === "hover" || sound === "click") {
       return;
     }
 
@@ -346,6 +346,9 @@ export default function Home() {
   };
 
   const handlePlayGamesClick = () => {
+    if (!ensureWalletConnected()) {
+      return;
+    }
     window.location.href = "/games";
   };
 
@@ -427,7 +430,12 @@ export default function Home() {
               <Link
                 href="/games"
                 className="py-5 border-b-2 border-foreground/20 text-2xl font-bold"
-                onClick={() => {
+                onClick={(e) => {
+                  if (!ensureWalletConnected()) {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    return;
+                  }
                   setMenuOpen(false);
                   playSound("click");
                 }}
@@ -722,16 +730,28 @@ export default function Home() {
                         game={game}
                         onHover={() => playSound("hover")}
                         onClick={() => playSound("click")}
+                        onJoinGame={() => {
+                          playSound("click");
+                          handlePlayGamesClick();
+                        }}
                       />
                     ))}
                   </div>
 
                   <div className="text-center mt-12">
-                    <Link href="/games">
+                    <Link
+                      href="/games"
+                      onClick={(e) => {
+                        if (!ensureWalletConnected()) {
+                          e.preventDefault();
+                          return;
+                        }
+                        playSound("click");
+                      }}
+                    >
                       <AnimatedButton
                         className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
                         onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
                       >
                         VIEW ALL GAMES<ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
                       </AnimatedButton>

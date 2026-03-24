@@ -27,7 +27,7 @@ const WALLET_METADATA: Record<
   },
   Backpack: {
     name: "Backpack",
-    icon: "https://play-lh.googleusercontent.com/oU0hWlCk3ZT_5dng09QaxdcIUpY2m5GkZGDa4TrbJ36zG6zxKL2yFPyC9jvnMeecRPA",
+    icon: "/images/feature/backpack.png",
     installUrl: "https://www.backpack.app/",
   },
 };

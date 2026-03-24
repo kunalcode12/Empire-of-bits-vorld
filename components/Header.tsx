@@ -197,6 +197,10 @@ export default function Header({
   }, [walletConnected]);
 
   const playSound = (sound: string) => {
+    if (sound === "hover" || sound === "click") {
+      return;
+    }
+
     if (audioRef.current) {
       audioRef.current.src = `/sounds/${sound}.mp3`;
       audioRef.current
@@ -845,7 +849,9 @@ export default function Header({
           </div>
         </div>
 
-        {/* Wallet Modal - Show wallet selection or connected wallet info */}
+      </header>
+
+      {/* Wallet Modal - Show wallet selection or connected wallet info */}
         {walletConnected ? (
           <AnimatePresence>
             {showWalletModal && (
@@ -971,7 +977,7 @@ export default function Header({
           />
         )}
 
-        {/* Mobile menu - full screen overlay */}
+      {/* Mobile menu - full screen overlay */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -1137,7 +1143,6 @@ export default function Header({
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
     </>
   );
 }
