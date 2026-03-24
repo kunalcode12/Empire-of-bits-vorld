@@ -484,9 +484,9 @@ export default function Header({
 
         <div className="max-w-7xl mx-auto px-4">
           {/* Main header container */}
-          <div className="flex flex-col">
+          <div className="relative flex items-center justify-between gap-4">
             {/* Upper section with logo and wallet */}
-            <div className="flex justify-between items-center mb-2 md:mb-0">
+            <div className="flex justify-between items-center w-full">
               {/* Logo section with animation */}
               <Link href="/" className="group relative z-10">
                 <motion.div
@@ -804,62 +804,60 @@ export default function Header({
             </div>
 
             {/* Navigation bar - desktop */}
-            <nav className="hidden md:block">
-              <div className="flex justify-center">
-                <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
-                  <ul className="flex space-x-1 relative">
-                    {navItems.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                            activeNavItem === item.name
-                              ? "text-white"
-                              : "text-foreground/70 hover:text-foreground"
-                          }`}
-                          onMouseEnter={() => playSound("hover")}
-                          onClick={(e) => {
-                            // Check if navigation requires authentication
+            <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+              <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
+                <ul className="flex space-x-1 relative">
+                  {navItems.map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                          activeNavItem === item.name
+                            ? "text-white"
+                            : "text-foreground/70 hover:text-foreground"
+                        }`}
+                        onMouseEnter={() => playSound("hover")}
+                        onClick={(e) => {
+                          // Check if navigation requires authentication
+                          if (
+                            item.name === "profile" ||
+                            item.name === "games"
+                          ) {
+                            e.preventDefault(); // Prevent default navigation
+
                             if (
-                              item.name === "profile" ||
-                              item.name === "games"
+                              (item.name === "games" ||
+                                item.name === "profile") &&
+                              !ensureWalletConnected()
                             ) {
-                              e.preventDefault(); // Prevent default navigation
-
-                              if (
-                                (item.name === "games" ||
-                                  item.name === "profile") &&
-                                !ensureWalletConnected()
-                              ) {
-                                return;
-                              }
-
-                              checkAuthentication(item.href);
-                            } else {
-                              setActiveNavItem(item.name);
-                              playSound("click");
+                              return;
                             }
-                          }}
-                        >
-                          {activeNavItem === item.name && (
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
-                              layoutId="activeNavBackground"
-                              initial={false}
-                              transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 30,
-                              }}
-                            />
-                          )}
-                          {item.icon}
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+
+                            checkAuthentication(item.href);
+                          } else {
+                            setActiveNavItem(item.name);
+                            playSound("click");
+                          }
+                        }}
+                      >
+                        {activeNavItem === item.name && (
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
+                            layoutId="activeNavBackground"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                        {item.icon}
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </nav>
           </div>
