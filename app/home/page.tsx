@@ -23,7 +23,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { Tilt } from "react-tilt";
+import Tilt from "react-parallax-tilt";
 import { ParticlesContainer } from "@/components/particles-container";
 import { GlitchText } from "@/components/glitch-text";
 import { ScrollProgress } from "@/components/scroll-progress";
@@ -287,7 +287,10 @@ export default function Home() {
             ].map((game, index) => (
               <Tilt
                 key={game.name}
-                options={{ max: 25, scale: 1.05, speed: 300 }}
+                tiltMaxAngleX={25}
+                tiltMaxAngleY={25}
+                scale={1.05}
+                transitionSpeed={300}
                 className="w-full h-full perspective-1000"
               >
                 <motion.div
@@ -436,7 +439,10 @@ export default function Home() {
                 className="relative"
               >
                 <Tilt
-                  options={{ max: 15, scale: 1.02, speed: 300 }}
+                  tiltMaxAngleX={15}
+                  tiltMaxAngleY={15}
+                  scale={1.02}
+                  transitionSpeed={300}
                   className="h-full"
                 >
                   <div className="relative group h-full">
@@ -626,7 +632,10 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
               >
                 <Tilt
-                  options={{ max: 15, scale: 1.02, speed: 300 }}
+                  tiltMaxAngleX={15}
+                  tiltMaxAngleY={15}
+                  scale={1.02}
+                  transitionSpeed={300}
                   className="h-full"
                 >
                   <div className="relative group h-full">
@@ -746,7 +755,10 @@ export default function Home() {
               transition={{ duration: 0.7, delay: 0.3 }}
             >
               <Tilt
-                options={{ max: 10, scale: 1.02, speed: 300 }}
+                tiltMaxAngleX={10}
+                tiltMaxAngleY={10}
+                scale={1.02}
+                transitionSpeed={300}
                 className="h-full"
               >
                 <div className="relative group h-full">
@@ -803,7 +815,10 @@ export default function Home() {
               transition={{ duration: 0.7, delay: 0.3 }}
             >
               <Tilt
-                options={{ max: 10, scale: 1.02, speed: 300 }}
+                tiltMaxAngleX={10}
+                tiltMaxAngleY={10}
+                scale={1.02}
+                transitionSpeed={300}
                 className="h-full"
               >
                 <div className="relative group h-full">
