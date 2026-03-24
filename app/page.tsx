@@ -654,7 +654,7 @@ export default function Home() {
         </section>
 
         {/* Game Showcase Section */}
-        <section className="py-16 px-4 border-y-4 border-foreground relative overflow-hidden">
+        <section className="py-16 px-4 relative overflow-hidden">
           {/* Section background */}
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-[hsl(var(--accent-purple))/10] to-background/0 pointer-events-none"></div>
 
@@ -844,6 +844,121 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="py-16 md:py-24 px-4 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto relative">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              viewport={{ once: true }}
+              className="mb-10 md:mb-12 relative left-1/2 right-1/2 -mx-[50vw] w-screen"
+            >
+              <div className="relative h-[420px] md:h-[620px] w-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+                <Image
+                  src="/images/image.png"
+                  alt="Winner at the Underdog Hackathon by Indies on Solana"
+                  fill
+                  className="object-cover scale-105 blur-sm opacity-45"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/30" />
+                <div className="absolute inset-0 p-4 md:p-8">
+                  <div className="relative h-full w-full">
+                    <Image
+                      src="/images/image.png"
+                      alt="Winner at the Underdog Hackathon by Indies on Solana"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 text-center md:text-left bg-gradient-to-t from-black/75 to-transparent">
+                  <p className="text-xs md:text-sm uppercase tracking-[0.2em] text-white/75 mb-2">
+                    Achievement
+                  </p>
+                  <h3 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+                    Winner at the Underdog Hackathon
+                  </h3>
+                  <p className="mt-2 text-lg md:text-2xl text-white/90">
+                    by Indies on Solana
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="mb-10 md:mb-12 space-y-5 md:space-y-6 relative left-1/2 right-1/2 -mx-[50vw] w-screen px-3 md:px-6"
+            >
+              <p className="text-center text-sm md:text-base uppercase tracking-[0.18em] text-foreground/60">
+                Community Accreditations
+              </p>
+
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-purple))/6] via-transparent to-[hsl(var(--accent-yellow))/6] py-1.5">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+                <motion.div
+                  className="flex w-max gap-6"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{
+                    duration: 34,
+                    ease: "linear",
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                >
+                  {[...firstRowAccreditations, ...firstRowAccreditations].map(
+                    (image, index) => (
+                      <div
+                        key={`accreditation-top-${index}`}
+                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                      >
+                        <Image
+                          src={image}
+                          alt={`Accreditation screenshot ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-yellow))/6] via-transparent to-[hsl(var(--accent-purple))/6] py-1.5">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+                <motion.div
+                  className="flex w-max gap-6"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{
+                    duration: 40,
+                    ease: "linear",
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                >
+                  {[...secondRowAccreditations, ...secondRowAccreditations].map(
+                    (image, index) => (
+                      <div
+                        key={`accreditation-bottom-${index}`}
+                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                      >
+                        <Image
+                          src={image}
+                          alt={`Accreditation screenshot ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* How It Works Section */}
         <section className="py-16 md:py-28 px-4">
           <div className="max-w-7xl mx-auto">
@@ -1014,116 +1129,6 @@ export default function Home() {
           </div>
 
           <div className="max-w-5xl mx-auto relative">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              viewport={{ once: true }}
-              className="mb-10 md:mb-12 relative left-1/2 right-1/2 -mx-[50vw] w-screen"
-            >
-              <div className="relative h-[420px] md:h-[620px] w-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
-                <Image
-                  src="/images/image.png"
-                  alt="Winner at the Underdog Hackathon by Indies on Solana"
-                  fill
-                  className="object-cover scale-105 blur-sm opacity-45"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/30" />
-                <div className="absolute inset-0 p-4 md:p-8">
-                  <div className="relative h-full w-full">
-                    <Image
-                      src="/images/image.png"
-                      alt="Winner at the Underdog Hackathon by Indies on Solana"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 text-center md:text-left bg-gradient-to-t from-black/75 to-transparent">
-                  <p className="text-xs md:text-sm uppercase tracking-[0.2em] text-white/75 mb-2">
-                    Achievement
-                  </p>
-                  <h3 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
-                    Winner at the Underdog Hackathon
-                  </h3>
-                  <p className="mt-2 text-lg md:text-2xl text-white/90">
-                    by Indies on Solana
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="mb-10 md:mb-12 space-y-5 md:space-y-6 relative left-1/2 right-1/2 -mx-[50vw] w-screen px-3 md:px-6"
-            >
-              <p className="text-center text-sm md:text-base uppercase tracking-[0.18em] text-foreground/60">
-                Community Accreditations
-              </p>
-
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-purple))/6] via-transparent to-[hsl(var(--accent-yellow))/6] py-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
-                <motion.div
-                  className="flex w-max gap-6"
-                  animate={{ x: ["0%", "-50%"] }}
-                  transition={{
-                    duration: 34,
-                    ease: "linear",
-                    repeat: Number.POSITIVE_INFINITY,
-                  }}
-                >
-                  {[...firstRowAccreditations, ...firstRowAccreditations].map(
-                    (image, index) => (
-                      <div
-                        key={`accreditation-top-${index}`}
-                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
-                      >
-                        <Image
-                          src={image}
-                          alt={`Accreditation screenshot ${index + 1}`}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                    )
-                  )}
-                </motion.div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-yellow))/6] via-transparent to-[hsl(var(--accent-purple))/6] py-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
-                <motion.div
-                  className="flex w-max gap-6"
-                  animate={{ x: ["0%", "-50%"] }}
-                  transition={{
-                    duration: 40,
-                    ease: "linear",
-                    repeat: Number.POSITIVE_INFINITY,
-                  }}
-                >
-                  {[...secondRowAccreditations, ...secondRowAccreditations].map(
-                    (image, index) => (
-                      <div
-                        key={`accreditation-bottom-${index}`}
-                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
-                      >
-                        <Image
-                          src={image}
-                          alt={`Accreditation screenshot ${index + 1}`}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                    )
-                  )}
-                </motion.div>
-              </div>
-            </motion.div>
 
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
