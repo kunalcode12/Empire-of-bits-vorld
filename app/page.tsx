@@ -91,20 +91,20 @@ export default function Home() {
   const featuredGames = [
     {
       id: 1,
-      title: "CRYPTO RACER",
-      category: "Racing",
-      image: "/images/cryptoRacer.jpeg",
+      title: "Reactive Chess",
+      category: "Puzzle",
+      image: "/images/chess.jpeg",
       minBet: 0.01,
-      maxPlayers: 8,
+      maxPlayers: 2,
       prize: 0.25,
-      players: 6,
+      players: 0,
       status: "live",
     },
     {
       id: 2,
-      title: "PIXEL WARRIORS",
+      title: "Battle Ship",
       category: "Fighting",
-      image: "/images/pixelWarriors.jpeg",
+      image: "/images/battleShip.jpg",
       minBet: 0.05,
       maxPlayers: 2,
       prize: 0.15,
@@ -113,14 +113,14 @@ export default function Home() {
     },
     {
       id: 3,
-      title: "NFT HUNTERS",
+      title: "Space Invaders",
       category: "Adventure",
-      image: "/images/nftHunters.jpeg",
+      image: "/images/spaceInvaders.jpg",
       minBet: 0.02,
       maxPlayers: 4,
       prize: 0.12,
       players: 1,
-      status: "waiting",
+      status: "live",
     },
   ];
 
@@ -322,27 +322,8 @@ export default function Home() {
     }
   };
 
-  const handlePlayGamesClick = async () => {
-    if (!ensureWalletConnected()) {
-      return;
-    }
-
-    try {
-      // Check if user is authenticated
-      const profile = await authService.getProfile();
-      console.log("profile:", profile);
-      if (profile.success) {
-        // User is authenticated, navigate to games
-        window.location.href = "/games";
-      } else {
-        // User not authenticated, redirect to signup
-        window.location.href = "/signup";
-      }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      // If there's an error, redirect to signup
-      window.location.href = "/signup";
-    }
+  const handlePlayGamesClick = () => {
+    window.location.href = "/games";
   };
 
   return (
@@ -562,7 +543,7 @@ export default function Home() {
               Relive the classics, earn the future.
             </motion.p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex justify-center">
               <motion.div
                 className="relative inline-block"
                 whileHover={{ scale: 1.05 }}
@@ -593,33 +574,6 @@ export default function Home() {
                 )}
               </motion.div>
 
-              <motion.div
-                className="relative inline-block"
-                whileHover={{ scale: 1.05 }}
-                onMouseEnter={() => {
-                  setIsHovering("tournaments");
-                  playSound("hover");
-                }}
-                onMouseLeave={() => setIsHovering("")}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <Link href="/coming-soon">
-                  <AnimatedButton
-                    className="bg-transparent text-foreground px-12 py-5 text-2xl font-bold border-4 border-foreground relative overflow-hidden group"
-                    onClick={() => playSound("click")}
-                  >
-                    <span className="relative z-10 flex items-center">
-                      TOURNAMENTS
-                      <Trophy className="ml-3 h-6 w-6" />
-                    </span>
-                  </AnimatedButton>
-                </Link>
-                {isHovering === "tournaments" && (
-                  <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-purple))]"></div>
-                )}
-              </motion.div>
             </div>
 
             {!walletConnected && (
@@ -643,42 +597,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Stats */}
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-20 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                24
-              </div>
-              <div className="text-base text-foreground/70 mt-2">GAMES</div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                70+
-              </div>
-              <div className="text-base text-foreground/70 mt-2">PLAYERS</div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                12
-              </div>
-              <div className="text-base text-foreground/70 mt-2">
-                TOURNAMENTS
-              </div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                1 Sol
-              </div>
-              <div className="text-base text-foreground/70 mt-2">
-                PRIZE POOL
-              </div>
-            </div>
-          </motion.div>
         </section>
 
         {/* Game Showcase Section */}
