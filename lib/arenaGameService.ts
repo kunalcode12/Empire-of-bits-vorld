@@ -1,13 +1,10 @@
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 
-const ARENA_SERVER_URL =
-  process.env.NEXT_PUBLIC_ARENA_SERVER_URL ||
-  "wss://airdrop-arcade.onrender.com";
-const GAME_API_URL = "https://airdrop-arcade.onrender.com/api";
-const VORLD_APP_ID = process.env.NEXT_PUBLIC_VORLD_APP_ID || "";
-const ARENA_GAME_ID =
-  process.env.NEXT_PUBLIC_ARENA_GAME_ID || "arcade_mhd7wpus_2d752d45";
+const ARENA_SERVER_URL = "wss://dev.reactive.thevorld.com";
+const GAME_API_URL = "https://dev.reactive.thevorld.com/api";
+const VORLD_APP_ID = "app_mgs5crer_51c332b3";
+const ARENA_GAME_ID = "arcade_mhd7wpus_2d752d45";
 
 export interface GamePlayer {
   id: string;
@@ -97,7 +94,7 @@ export class ArenaGameService {
   // Initialize game with stream URL
   async initializeGame(
     streamUrl: string,
-    userToken: string
+    userToken: string,
   ): Promise<{ success: boolean; data?: GameState; error?: string }> {
     try {
       this.userToken = userToken;
@@ -116,8 +113,9 @@ export class ArenaGameService {
             "X-Vorld-App-ID": VORLD_APP_ID,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
+      console.log("response initializeGame", response);
 
       this.gameState = response.data.data;
 
@@ -139,6 +137,81 @@ export class ArenaGameService {
   }
 
   // Connect to WebSocket
+  // private async connectWebSocket(): Promise<boolean> {
+  //   try {
+  //     if (!this.gameState?.websocketUrl) {
+  //       console.error("No WebSocket URL provided");
+  //       return false;
+  //     }
+
+  //     // Close existing connection if any
+  //     if (this.socket) {
+  //       this.socket.disconnect();
+  //       this.socket = null;
+  //     }
+
+  //     // Determine WebSocket (Socket.IO) base origin URL
+  //     const providedUrl = this.gameState.websocketUrl;
+  //     let wsUrl = "https://dev.reactive.thevorld.com"; // fallback URL
+
+  //     if (providedUrl && providedUrl.trim().length > 0) {
+  //       try {
+  //         const parsed = new URL(providedUrl);
+  //         // Convert ws/wss scheme to http/https respectively for Socket.IO client
+  //         if (parsed.protocol === "wss:") {
+  //           parsed.protocol = "https:";
+  //         } else if (parsed.protocol === "ws:") {
+  //           parsed.protocol = "http:";
+  //         }
+  //         // Strip any custom path like /ws/<gameId>; Socket.IO connects to namespace based on path
+  //         console.log("parsed", parsed);
+  //         wsUrl = `${parsed.protocol}//${parsed.host}`;
+  //         console.log("wsUrl", wsUrl);
+  //       } catch (e) {
+  //         console.error("Failed to parse WebSocket URL, using fallback:", e);
+  //         // Fallback to default if parsing fails
+  //         wsUrl = "https://dev.reactive.thevorld.com";
+  //       }
+  //     }
+
+  //     console.log("WebSocket URL (converted):", wsUrl);
+  //     console.log("User Token:", this.userToken);
+
+  //     this.socket = io(wsUrl, {
+  //       transports: ["websocket"],
+  //       // timeout: 30000,
+  //       // forceNew: true,
+  //       // reconnection: true,
+  //       // reconnectionDelay: 1000,
+  //       // reconnectionAttempts: 10,
+  //       // reconnectionDelayMax: 5000,
+  //       // randomizationFactor: 0.5,
+  //       // auth: {
+  //       //   token: this.userToken,
+  //       //   appId: VORLD_APP_ID,
+  //       // },
+  //     });
+
+  //     this.setupEventListeners();
+
+  //     return new Promise((resolve) => {
+  //       this.socket?.on("connect", () => {
+  //         console.log("✅ WebSocket connected! Socket ID:", this.socket?.id);
+  //         // this.setupEventListeners();
+  //         resolve(true);
+  //       });
+
+  //       this.socket?.on("connect_error", (error) => {
+  //         console.error("❌ WebSocket connection failed:", error);
+  //         resolve(false);
+  //       });
+  //     });
+  //   } catch (error) {
+  //     console.error("Failed to connect to WebSocket:", error);
+  //     return false;
+  //   }
+  // }
+
   private async connectWebSocket(): Promise<boolean> {
     try {
       if (!this.gameState?.websocketUrl) {
@@ -152,57 +225,78 @@ export class ArenaGameService {
         this.socket = null;
       }
 
-      // Determine WebSocket (Socket.IO) base origin URL
-      const providedUrl = this.gameState.websocketUrl;
-      let wsUrl = "https://airdrop-arcade.onrender.com"; // fallback URL
+      const providedUrl = "https://dev.reactive.thevorld.com/";
+      console.log("Original WebSocket URL:", providedUrl);
 
-      if (providedUrl && providedUrl.trim().length > 0) {
-        try {
-          const parsed = new URL(providedUrl);
-          // Convert ws/wss scheme to http/https respectively for Socket.IO client
-          if (parsed.protocol === "wss:") {
-            parsed.protocol = "https:";
-          } else if (parsed.protocol === "ws:") {
-            parsed.protocol = "http:";
-          }
-          // Strip any custom path like /ws/<gameId>; Socket.IO connects to namespace based on path
-          wsUrl = `${parsed.protocol}//${parsed.host}`;
-        } catch (e) {
-          console.error("Failed to parse WebSocket URL, using fallback:", e);
-          // Fallback to default if parsing fails
-          wsUrl = "https://airdrop-arcade.onrender.com";
+      let wsUrl: string;
+      let socketPath = "/socket.io/"; // Default Socket.IO path
+
+      try {
+        const parsed = new URL(providedUrl);
+
+        // Convert ws/wss to http/https for Socket.IO client
+        const protocol = parsed.protocol === "wss:" ? "https:" : "http:";
+
+        // Extract the base URL (protocol + host)
+        wsUrl = `${protocol}//${parsed.host}`;
+
+        // If there's a custom path (like /ws/gameId), extract it
+        if (
+          parsed.pathname &&
+          parsed.pathname !== "/" &&
+          parsed.pathname !== "/socket.io/"
+        ) {
+          // Socket.IO uses the path option for custom namespaces
+          socketPath = parsed.pathname.endsWith("/")
+            ? parsed.pathname
+            : `${parsed.pathname}/`;
         }
+
+        console.log("Parsed WebSocket URL:", wsUrl);
+        console.log("Socket.IO Path:", socketPath);
+      } catch (e) {
+        console.error("Failed to parse WebSocket URL:", e);
+        return false;
       }
 
-      console.log("WebSocket URL (converted):", wsUrl);
-      console.log("User Token:", this.userToken);
-
+      // Create Socket.IO connection
       this.socket = io(wsUrl, {
-        transports: ["websocket", "polling"],
+        path: socketPath,
+        transports: ["websocket", "polling"], // Try websocket first, fallback to polling
         timeout: 30000,
-        forceNew: true,
         reconnection: true,
         reconnectionDelay: 1000,
-        reconnectionAttempts: 10,
+        reconnectionAttempts: 5,
         reconnectionDelayMax: 5000,
-        randomizationFactor: 0.5,
         auth: {
           token: this.userToken,
           appId: VORLD_APP_ID,
+        },
+        // Add extra headers if needed
+        extraHeaders: {
+          "X-Arena-Arcade-Game-ID": ARENA_GAME_ID,
+          "X-Vorld-App-ID": VORLD_APP_ID,
         },
       });
 
       this.setupEventListeners();
 
       return new Promise((resolve) => {
+        const connectTimeout = setTimeout(() => {
+          console.error("❌ WebSocket connection timeout");
+          resolve(false);
+        }, 30000);
+
         this.socket?.on("connect", () => {
+          clearTimeout(connectTimeout);
           console.log("✅ WebSocket connected! Socket ID:", this.socket?.id);
-          // this.setupEventListeners();
           resolve(true);
         });
 
         this.socket?.on("connect_error", (error) => {
-          console.error("❌ WebSocket connection failed:", error);
+          clearTimeout(connectTimeout);
+          console.error("❌ WebSocket connection failed:", error.message);
+          console.error("Error details:", error);
           resolve(false);
         });
       });
@@ -259,6 +353,7 @@ export class ArenaGameService {
     });
 
     this.socket?.on("immediate_item_drop", (data) => {
+      console.log("Immediate item drop:", data);
       this.onImmediateItemDrop?.(data);
     });
 
@@ -282,7 +377,7 @@ export class ArenaGameService {
 
   // Get game details
   async getGameDetails(
-    gameId: string
+    gameId: string,
   ): Promise<{ success: boolean; data?: GameState; error?: string }> {
     try {
       const response = await axios.get(`${GAME_API_URL}/games/${gameId}`, {
@@ -310,7 +405,7 @@ export class ArenaGameService {
     gameId: string,
     playerId: string,
     amount: number,
-    username: string
+    username: string,
   ): Promise<{ success: boolean; data?: BoostData; error?: string }> {
     try {
       // Validation before making the request
@@ -346,7 +441,7 @@ export class ArenaGameService {
       console.log("Username:", username);
       console.log(
         "Full URL:",
-        `${GAME_API_URL}/games/boost/player/${gameId}/${playerId}`
+        `${GAME_API_URL}/games/boost/player/${gameId}/${playerId}`,
       );
 
       const response = await axios.post(
@@ -364,7 +459,7 @@ export class ArenaGameService {
           },
           // Add timeout to prevent hanging requests
           timeout: 10000,
-        }
+        },
       );
 
       console.log("✅ Boost response status:", response.status);
@@ -408,7 +503,7 @@ export class ArenaGameService {
   async updateStreamUrl(
     gameId: string,
     streamUrl: string,
-    oldStreamUrl: string
+    oldStreamUrl: string,
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const response = await axios.put(
@@ -424,7 +519,7 @@ export class ArenaGameService {
             "X-Vorld-App-ID": VORLD_APP_ID,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       return {
@@ -470,7 +565,7 @@ export class ArenaGameService {
   async dropImmediateItem(
     gameId: string,
     itemId: string,
-    targetPlayer: string
+    targetPlayer: string,
   ): Promise<{ success: boolean; data?: ItemDrop; error?: string }> {
     try {
       const response = await axios.post(
@@ -486,7 +581,7 @@ export class ArenaGameService {
             "X-Vorld-App-ID": VORLD_APP_ID,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       return {
