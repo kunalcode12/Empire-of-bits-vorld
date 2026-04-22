@@ -18,7 +18,6 @@ import {
   Coins,
   BarChart3,
   Award,
-  Clock,
   Sparkles,
 } from "lucide-react";
 import { GameCard } from "@/components/game-card";
@@ -91,20 +90,20 @@ export default function Home() {
   const featuredGames = [
     {
       id: 1,
-      title: "CRYPTO RACER",
-      category: "Racing",
-      image: "/images/cryptoRacer.jpeg",
+      title: "Reactive Chess",
+      category: "Puzzle",
+      image: "/images/chess.jpeg",
       minBet: 0.01,
-      maxPlayers: 8,
+      maxPlayers: 2,
       prize: 0.25,
-      players: 6,
+      players: 0,
       status: "live",
     },
     {
       id: 2,
-      title: "PIXEL WARRIORS",
+      title: "Battle Ship",
       category: "Fighting",
-      image: "/images/pixelWarriors.jpeg",
+      image: "/images/battleShip.jpg",
       minBet: 0.05,
       maxPlayers: 2,
       prize: 0.15,
@@ -113,16 +112,40 @@ export default function Home() {
     },
     {
       id: 3,
-      title: "NFT HUNTERS",
+      title: "Space Invaders",
       category: "Adventure",
-      image: "/images/nftHunters.jpeg",
+      image: "/images/spaceInvaders.jpg",
       minBet: 0.02,
       maxPlayers: 4,
       prize: 0.12,
       players: 1,
-      status: "waiting",
+      status: "live",
     },
   ];
+
+  const featureAccreditationImages = [
+    "/images/feature/Indiesonsolana.png",
+    "/images/feature/Superteam.png",
+    "/images/feature/biks.png",
+    "/images/feature/bk.png",
+    "/images/feature/bkayush.png",
+    "/images/feature/bkk.png",
+    "/images/feature/himanshu.png",
+    "/images/feature/indies.png",
+    "/images/feature/indieskunal.png",
+    "/images/feature/indiessol.png",
+    "/images/feature/semi.png",
+    "/images/feature/solanadevs.png",
+    "/images/feature/solanagaming.png",
+    "/images/feature/super.jpg",
+    "/images/feature/vorld.png",
+  ];
+
+  const firstRowAccreditations = featureAccreditationImages.slice(0, 7);
+  const secondRowAccreditations =
+    featureAccreditationImages.slice(7).length > 0
+      ? featureAccreditationImages.slice(7)
+      : featureAccreditationImages;
 
   const tournaments = [
     {
@@ -257,6 +280,10 @@ export default function Home() {
   }, [toast]);
 
   const playSound = (sound: string) => {
+    if (sound === "hover" || sound === "click") {
+      return;
+    }
+
     if (audioRef.current) {
       audioRef.current.src = `/sounds/${sound}.mp3`;
       audioRef.current
@@ -318,27 +345,11 @@ export default function Home() {
     }
   };
 
-  const handlePlayGamesClick = async () => {
+  const handlePlayGamesClick = () => {
     if (!ensureWalletConnected()) {
       return;
     }
-
-    try {
-      // Check if user is authenticated
-      const profile = await authService.getProfile();
-      console.log("profile:", profile);
-      if (profile.success) {
-        // User is authenticated, navigate to games
-        window.location.href = "/games";
-      } else {
-        // User not authenticated, redirect to signup
-        window.location.href = "/signup";
-      }
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      // If there's an error, redirect to signup
-      window.location.href = "/signup";
-    }
+    window.location.href = "/games";
   };
 
   return (
@@ -419,7 +430,12 @@ export default function Home() {
               <Link
                 href="/games"
                 className="py-5 border-b-2 border-foreground/20 text-2xl font-bold"
-                onClick={() => {
+                onClick={(e) => {
+                  if (!ensureWalletConnected()) {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    return;
+                  }
                   setMenuOpen(false);
                   playSound("click");
                 }}
@@ -527,7 +543,7 @@ export default function Home() {
             <div className="absolute bottom-1/3 right-1/3 w-5 h-5 bg-red-500 rotate-45 animate-float-slower"></div>
           </div>
 
-          <div className="max-w-5xl mx-auto relative">
+          <div className="max-w-7xl mx-auto relative">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -558,7 +574,7 @@ export default function Home() {
               Relive the classics, earn the future.
             </motion.p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex justify-center">
               <motion.div
                 className="relative inline-block"
                 whileHover={{ scale: 1.05 }}
@@ -589,33 +605,6 @@ export default function Home() {
                 )}
               </motion.div>
 
-              <motion.div
-                className="relative inline-block"
-                whileHover={{ scale: 1.05 }}
-                onMouseEnter={() => {
-                  setIsHovering("tournaments");
-                  playSound("hover");
-                }}
-                onMouseLeave={() => setIsHovering("")}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <Link href="/coming-soon">
-                  <AnimatedButton
-                    className="bg-transparent text-foreground px-12 py-5 text-2xl font-bold border-4 border-foreground relative overflow-hidden group"
-                    onClick={() => playSound("click")}
-                  >
-                    <span className="relative z-10 flex items-center">
-                      TOURNAMENTS
-                      <Trophy className="ml-3 h-6 w-6" />
-                    </span>
-                  </AnimatedButton>
-                </Link>
-                {isHovering === "tournaments" && (
-                  <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-purple))]"></div>
-                )}
-              </motion.div>
             </div>
 
             {!walletConnected && (
@@ -637,48 +626,43 @@ export default function Home() {
                 </button>
               </motion.div>
             )}
+
+            <motion.div
+              className="mt-10 md:mt-12 max-w-4xl mx-auto px-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.7 }}
+            >
+              <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-r from-[hsl(var(--accent-purple))/10] via-background/80 to-[hsl(var(--accent-yellow))/10] px-5 py-5 md:px-8 md:py-6 shadow-[0_10px_35px_rgba(124,58,237,0.10)] backdrop-blur-md">
+                <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+
+                <p className="text-center text-lg md:text-2xl font-semibold tracking-tight leading-relaxed text-foreground/90">
+                  Fast matches. Fair competition. Rewards worth your time.
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5 text-sm md:text-base">
+                  <span className="rounded-full border border-[hsl(var(--accent-purple))/30] bg-[hsl(var(--accent-purple))/8] px-3.5 py-1.5 text-foreground/90">
+                    No long waiting lobbies
+                  </span>
+                  <span className="rounded-full border border-[hsl(var(--accent-yellow))/35] bg-[hsl(var(--accent-yellow))/8] px-3.5 py-1.5 text-foreground/90">
+                    Skill-first gameplay
+                  </span>
+                  <span className="rounded-full border border-[hsl(var(--accent-green))/35] bg-[hsl(var(--accent-green))/10] px-3.5 py-1.5 text-foreground/90">
+                    Real reward progression
+                  </span>
+                </div>
+
+                <p className="mt-4 text-center text-sm md:text-base text-foreground/70 italic">
+                  Loved by 300+ gamers
+                </p>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Stats */}
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-20 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                24
-              </div>
-              <div className="text-base text-foreground/70 mt-2">GAMES</div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                70+
-              </div>
-              <div className="text-base text-foreground/70 mt-2">PLAYERS</div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                12
-              </div>
-              <div className="text-base text-foreground/70 mt-2">
-                TOURNAMENTS
-              </div>
-            </div>
-            <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-              <div className="text-4xl font-bold text-[hsl(var(--accent-yellow))]">
-                1 Sol
-              </div>
-              <div className="text-base text-foreground/70 mt-2">
-                PRIZE POOL
-              </div>
-            </div>
-          </motion.div>
         </section>
 
         {/* Game Showcase Section */}
-        <section className="py-16 px-4 border-y-4 border-foreground relative overflow-hidden">
+        <section className="py-16 px-4 relative overflow-hidden">
           {/* Section background */}
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-[hsl(var(--accent-purple))/10] to-background/0 pointer-events-none"></div>
 
@@ -746,19 +730,30 @@ export default function Home() {
                         game={game}
                         onHover={() => playSound("hover")}
                         onClick={() => playSound("click")}
+                        onJoinGame={() => {
+                          playSound("click");
+                          handlePlayGamesClick();
+                        }}
                       />
                     ))}
                   </div>
 
                   <div className="text-center mt-12">
-                    <Link href="/games">
+                    <Link
+                      href="/games"
+                      onClick={(e) => {
+                        if (!ensureWalletConnected()) {
+                          e.preventDefault();
+                          return;
+                        }
+                        playSound("click");
+                      }}
+                    >
                       <AnimatedButton
                         className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
                         onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
                       >
-                        VIEW ALL GAMES
-                        <ArrowRight className="ml-2 h-5 w-5" />
+                        VIEW ALL GAMES<ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
                       </AnimatedButton>
                     </Link>
                   </div>
@@ -869,6 +864,121 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="py-16 md:py-24 px-4 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto relative">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              viewport={{ once: true }}
+              className="mb-10 md:mb-12 relative left-1/2 right-1/2 -mx-[50vw] w-screen"
+            >
+              <div className="relative h-[420px] md:h-[620px] w-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+                <Image
+                  src="/images/image.png"
+                  alt="Winner at the Underdog Hackathon by Indies on Solana"
+                  fill
+                  className="object-cover scale-105 blur-sm opacity-45"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/30" />
+                <div className="absolute inset-0 p-4 md:p-8">
+                  <div className="relative h-full w-full">
+                    <Image
+                      src="/images/image.png"
+                      alt="Winner at the Underdog Hackathon by Indies on Solana"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 text-center md:text-left bg-gradient-to-t from-black/75 to-transparent">
+                  <p className="text-xs md:text-sm uppercase tracking-[0.2em] text-white/75 mb-2">
+                    Achievement
+                  </p>
+                  <h3 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+                    Winner at the Underdog Hackathon
+                  </h3>
+                  <p className="mt-2 text-lg md:text-2xl text-white/90">
+                    by Indies on Solana
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="mb-10 md:mb-12 space-y-5 md:space-y-6 relative left-1/2 right-1/2 -mx-[50vw] w-screen px-3 md:px-6"
+            >
+              <p className="text-center text-sm md:text-base uppercase tracking-[0.18em] text-foreground/60">
+                Community Accreditations
+              </p>
+
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-purple))/6] via-transparent to-[hsl(var(--accent-yellow))/6] py-1.5">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+                <motion.div
+                  className="flex w-max gap-6"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{
+                    duration: 34,
+                    ease: "linear",
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                >
+                  {[...firstRowAccreditations, ...firstRowAccreditations].map(
+                    (image, index) => (
+                      <div
+                        key={`accreditation-top-${index}`}
+                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                      >
+                        <Image
+                          src={image}
+                          alt={`Accreditation screenshot ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-yellow))/6] via-transparent to-[hsl(var(--accent-purple))/6] py-1.5">
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+                <motion.div
+                  className="flex w-max gap-6"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{
+                    duration: 40,
+                    ease: "linear",
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                >
+                  {[...secondRowAccreditations, ...secondRowAccreditations].map(
+                    (image, index) => (
+                      <div
+                        key={`accreditation-bottom-${index}`}
+                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                      >
+                        <Image
+                          src={image}
+                          alt={`Accreditation screenshot ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* How It Works Section */}
         <section className="py-16 md:py-28 px-4">
           <div className="max-w-7xl mx-auto">
@@ -916,10 +1026,8 @@ export default function Home() {
                   Choose Your Challenge
                 </h3>
                 <p className="text-lg text-foreground/70">
-                  Select from a lineup of classic arcade games, each with a
-                  modern twist of Sol stakes. Place your bets, compete against
-                  other players, and relive the thrill of retro gaming with a
-                  Web3 edge.
+                  Select from a lineup of classic arcade games. Place your bets, compete against
+                  other players, and have a the thrill of retro gaming.
                 </p>
               </motion.div>
 
@@ -932,11 +1040,9 @@ export default function Home() {
                   3
                 </div>
                 <Coins className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
-                <h3 className="text-2xl font-bold mb-4">WIN CRYPTO</h3>
+                <h3 className="text-2xl font-bold mb-4">WIN POINTS</h3>
                 <p className="text-lg text-foreground/70">
-                  Win matches, top the leaderboards, and watch yourself grow
-                  with every victory. Earn an exclusive NFT as you dominate the
-                  arcade and build your empire of bits.
+                  Win matches, top the leaderboards, and watch yourself grow with every victory.
                 </p>
               </motion.div>
             </div>
@@ -972,29 +1078,15 @@ export default function Home() {
                       LIVE
                     </div>
 
-                    <div className="absolute bottom-3 left-3 bg-background/80 px-3 py-1.5 text-sm font-bold">
-                      <div className="flex items-center">
-                        <Coins className="h-4 w-4 mr-2 text-[hsl(var(--accent-yellow))]" />
-                        PRIZE POOL: 0.{Math.floor(Math.random() * 90) + 10} SOL
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-3 right-3 bg-background/80 px-3 py-1.5 text-sm font-bold">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2" />
-                        {Math.floor(Math.random() * 10) + 2}:
-                        {Math.floor(Math.random() * 60)
-                          .toString()
-                          .padStart(2, "0")}{" "}
-                        LEFT
-                      </div>
-                    </div>
-
                     <Image
-                      src={`/images/games${stream}.jpeg`}
+                      src={
+                        stream === 1
+                          ? "/images/candyCrush.jpg"
+                          : "/images/chess.jpeg"
+                      }
                       width={500}
                       height={300}
-                      alt={`Game ${stream}`}
+                      alt={stream === 1 ? "Candy Crush" : "Chess"}
                       className="object-cover w-full h-full"
                     />
                   </div>
@@ -1002,7 +1094,7 @@ export default function Home() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-2xl font-bold flex items-center">
-                        {stream === 1 ? "CRYPTO RACER" : "PIXEL WARRIORS"}
+                        {stream === 1 ? "CANDY CRUSH" : "CHESS"}
                         {stream === 1 && (
                           <span className="ml-3 inline-block px-2 py-1 bg-[hsl(var(--accent-green))] text-black text-sm font-bold">
                             POPULAR
@@ -1011,16 +1103,19 @@ export default function Home() {
                       </h3>
                       <p className="text-lg text-foreground/70 flex items-center mt-2">
                         <Users className="h-4 w-4 mr-2" />
-                        {stream === 1 ? "8" : "2"} PLAYERS • ROUND{" "}
-                        {Math.floor(Math.random() * 5) + 1}
+                        {stream === 1 ? "Single Player" : "Two Player"}
                       </p>
                     </div>
-                    <AnimatedButton
-                      className="bg-[hsl(var(--accent-purple))] border-3 border-[hsl(var(--accent-purple)/0.7)] px-5 py-3 text-lg text-white"
+                    <a
+                      href="https://www.twitch.tv/empireofbits"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={() => playSound("click")}
                     >
-                      SPECTATE
-                    </AnimatedButton>
+                      <AnimatedButton className="bg-[hsl(var(--accent-purple))] border-3 border-[hsl(var(--accent-purple)/0.7)] px-5 py-3 text-lg text-white">
+                        SPECTATE
+                      </AnimatedButton>
+                    </a>
                   </div>
                 </motion.div>
               ))}
@@ -1054,6 +1149,7 @@ export default function Home() {
           </div>
 
           <div className="max-w-5xl mx-auto relative">
+
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
@@ -1071,7 +1167,7 @@ export default function Home() {
               </h2>
 
               <p className="text-2xl text-foreground/80 mb-10 max-w-3xl mx-auto">
-                Experience the fusion of retro gaming and blockchain technology.
+                Experience the fusion of retro gaming.
                 Play, compete, and earn like never before.
               </p>
 
@@ -1127,7 +1223,7 @@ export default function Home() {
             </div>
             <p className="text-xl text-foreground/70 mb-8">
               The ultimate Empire of bits arcade gaming platform. Compete in
-              retro-style games, bet cryptocurrency, and win big in tournaments.
+              retro-style games, bet points, and win big in tournaments.
             </p>
             <div className="flex space-x-5">
               <motion.a

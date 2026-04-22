@@ -99,7 +99,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       if ("backpack" in window && window.backpack) {
         wallets.push({
           name: "Backpack",
-          icon: "https://play-lh.googleusercontent.com/oU0hWlCk3ZT_5dng09QaxdcIUpY2m5GkZGDa4TrbJ36zG6zxKL2yFPyC9jvnMeecRPA",
+          icon: "/images/feature/backpack.png",
           provider: window.backpack,
         });
       }

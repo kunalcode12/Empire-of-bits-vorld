@@ -197,6 +197,10 @@ export default function Header({
   }, [walletConnected]);
 
   const playSound = (sound: string) => {
+    if (sound === "hover" || sound === "click") {
+      return;
+    }
+
     if (audioRef.current) {
       audioRef.current.src = `/sounds/${sound}.mp3`;
       audioRef.current
@@ -400,38 +404,44 @@ export default function Header({
     }
   };
 
-  const navItems = [
-    {
-      name: "home",
-      label: "HOME",
-      icon: <Gamepad2 className="w-4 h-4" />,
-      href: "/",
-    },
-    {
-      name: "games",
-      label: "GAMES",
-      icon: <Zap className="w-4 h-4" />,
-      href: "/games",
-    },
-    {
-      name: "points",
-      label: "POINTS",
-      icon: <Sparkles className="w-4 h-4" />,
-      href: "/points-exchange",
-    },
-    // {
-    //   name: "vesting",
-    //   label: "VESTING",
-    //   icon: <Trophy className="w-4 h-4" />,
-    //   href: "/vesting",
-    // },
-    {
-      name: "profile",
-      label: "PROFILE",
-      icon: <CircleUserRound className="w-4 h-4" />,
-      href: "/profile",
-    },
-  ];
+ const navItems = [
+  {
+    name: "home",
+    label: "HOME",
+    icon: <Gamepad2 className="w-4 h-4" />,
+    href: "/",
+  },
+  {
+    name: "games",
+    label: "GAMES",
+    icon: <Zap className="w-4 h-4" />,
+    href: "/games",
+  },
+  {
+    name: "points",
+    label: "POINTS",
+    icon: <Sparkles className="w-4 h-4" />,
+    href: "/points-exchange",
+  },
+  // {
+  //   name: "portfolio",
+  //   label: "PORTFOLIO",
+  //   icon: <Coins className="w-4 h-4" />,
+  //   href: "/token-portfolio",
+  // },
+  // {
+  //   name: "vesting",
+  //   label: "VESTING",
+  //   icon: <Trophy className="w-4 h-4" />,
+  //   href: "/vesting",
+  // },
+  {
+    name: "profile",
+    label: "PROFILE",
+    icon: <CircleUserRound className="w-4 h-4" />,
+    href: "/profile",
+  },
+];
 
   return (
     <>
@@ -467,8 +477,8 @@ export default function Header({
         ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
           scrolled
-            ? "py-2 backdrop-blur-xl border-b border-foreground/10 bg-background/70"
-            : "py-4 bg-transparent"
+            ? "-translate-y-full opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100 py-4 bg-transparent"
         }`}
       >
         {/* Animated accent line */}
@@ -478,9 +488,9 @@ export default function Header({
 
         <div className="max-w-7xl mx-auto px-4">
           {/* Main header container */}
-          <div className="flex flex-col">
+          <div className="relative flex items-center justify-between gap-4">
             {/* Upper section with logo and wallet */}
-            <div className="flex justify-between items-center mb-2 md:mb-0">
+            <div className="flex justify-between items-center w-full">
               {/* Logo section with animation */}
               <Link href="/" className="group relative z-10">
                 <motion.div
@@ -798,68 +808,50 @@ export default function Header({
             </div>
 
             {/* Navigation bar - desktop */}
-            <nav className="hidden md:block">
-              <div className="flex justify-center">
-                <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
-                  <ul className="flex space-x-1 relative">
-                    {navItems.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
-                            activeNavItem === item.name
-                              ? "text-white"
-                              : "text-foreground/70 hover:text-foreground"
-                          }`}
-                          onMouseEnter={() => playSound("hover")}
-                          onClick={(e) => {
-                            // Check if navigation requires authentication
-                            if (
-                              item.name === "profile" ||
-                              item.name === "games"
-                            ) {
-                              e.preventDefault(); // Prevent default navigation
-
-                              if (
-                                (item.name === "games" ||
-                                  item.name === "profile") &&
-                                !ensureWalletConnected()
-                              ) {
-                                return;
-                              }
-
-                              checkAuthentication(item.href);
-                            } else {
-                              setActiveNavItem(item.name);
-                              playSound("click");
-                            }
-                          }}
-                        >
-                          {activeNavItem === item.name && (
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
-                              layoutId="activeNavBackground"
-                              initial={false}
-                              transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 30,
-                              }}
-                            />
-                          )}
-                          {item.icon}
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+              <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
+                <ul className="flex space-x-1 relative">
+                  {navItems.map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                          activeNavItem === item.name
+                            ? "text-white"
+                            : "text-foreground/70 hover:text-foreground"
+                        }`}
+                        onMouseEnter={() => playSound("hover")}
+                        onClick={() => {
+                          setActiveNavItem(item.name);
+                          playSound("click");
+                        }}
+                      >
+                        {activeNavItem === item.name && (
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 rounded-full -z-10"
+                            layoutId="activeNavBackground"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                        {item.icon}
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </nav>
           </div>
         </div>
 
-        {/* Wallet Modal - Show wallet selection or connected wallet info */}
+      </header>
+
+      {/* Wallet Modal - Show wallet selection or connected wallet info */}
         {walletConnected ? (
           <AnimatePresence>
             {showWalletModal && (
@@ -985,7 +977,7 @@ export default function Header({
           />
         )}
 
-        {/* Mobile menu - full screen overlay */}
+      {/* Mobile menu - full screen overlay */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -1151,7 +1143,6 @@ export default function Header({
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
     </>
   );
 }

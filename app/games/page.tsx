@@ -79,34 +79,10 @@ export default function GamesPage() {
   const games = [
     {
       id: 1,
-      title: "Candy Crush",
-      image: "/images/candyCrush.jpg",
-      category: "Arcade",
-      pointsRequired: 50,
-      maxPlayers: 8,
-      prize: 0.25,
-      players: 6,
-      status: "live",
-      route: "/levels-candycrush",
-    },
-    {
-      id: 2,
-      title: "Battle Ship",
-      category: "Fighting",
-      image: "/images/battleShip.jpg",
-      pointsRequired: 50,
-      maxPlayers: 2,
-      prize: 0.15,
-      players: 2,
-      status: "live",
-      route: "https://battleship.empireofbits.fun/",
-    },
-    {
-      id: 3,
       title: "Space Invaders",
       category: "Adventure",
       image: "/images/spaceInvaders.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 4,
       prize: 0.12,
       players: 1,
@@ -114,11 +90,48 @@ export default function GamesPage() {
       route: "https://spaceinvaders.empireofbits.fun/",
     },
     {
+      id: 2,
+      title: "Chess Empire",
+      category: "Puzzle",
+      image: "/images/chess.jpeg",
+      pointsRequired: 15,
+      maxPlayers: 2,
+      prize: 0.2,
+      players: 0,
+      status: "live",
+      route: "https://chess.empireofbits.fun/",
+    },
+    {
+      id: 3,
+      title: "Candy Crush",
+      image: "/images/candyCrush.jpg",
+      category: "Arcade",
+      pointsRequired: 15,
+      maxPlayers: 8,
+      prize: 0.25,
+      players: 6,
+      status: "live",
+      route: "/levels-candycrush",
+    },
+    {
       id: 4,
+      title: "Battle Ship",
+      category: "Fighting",
+      image: "/images/battleShip.jpg",
+      pointsRequired: 15,
+      maxPlayers: 2,
+      prize: 0.15,
+      players: 2,
+      status: "live",
+      route: "https://battleship.empireofbits.fun/",
+    },
+
+    {
+      id: 5,
       title: "Platformer",
       category: "Action",
       image: "/images/platformer.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 6,
       prize: 0.18,
       players: 4,
@@ -130,7 +143,7 @@ export default function GamesPage() {
       title: "Axe Ascend",
       category: "3D and VR",
       image: "/images/axeAscend.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 4,
       prize: 0.3,
       players: 3,
@@ -142,7 +155,7 @@ export default function GamesPage() {
       title: "RC Crypto Car",
       category: "3D and VR",
       image: "/images/rcCrypto.jpg",
-      pointsRequired: 50,
+      pointsRequired: 15,
       maxPlayers: 1,
       prize: 0.3,
       players: 0,
@@ -150,7 +163,7 @@ export default function GamesPage() {
       route: "/coming-soon-games",
     },
     {
-      id: 5,
+      id: 6,
       title: "Retro Racer",
       category: "Racing",
       image: "/images/comingSoon.jpeg",
@@ -161,18 +174,7 @@ export default function GamesPage() {
       status: "coming-soon",
       route: "/coming-soon-games",
     },
-    // {
-    //   id: 6,
-    //   title: "Puzzle Master",
-    //   category: "Puzzle",
-    //   image: "/images/comingSoon.jpeg",
-    //   pointsRequired: 40,
-    //   maxPlayers: 10,
-    //   prize: 0.2,
-    //   players: 0,
-    //   status: "coming-soon",
-    //   route: "/coming-soon",
-    // },
+
     // {
     //   id: 7,
     //   title: "Strategy Wars",
@@ -380,7 +382,7 @@ export default function GamesPage() {
       try {
         const walletAddress = localStorage.getItem("walletAddress");
         const profile = await authService.getProfile();
-        
+
         if (walletAddress && !profile.success) {
           // Has wallet but not authenticated, redirect to signup
           router.push("/signup");
@@ -416,8 +418,6 @@ export default function GamesPage() {
       } else {
         setIsAuthenticated(false);
 
-
-        
         setUserProfile(null);
       }
     } catch (error) {
@@ -429,17 +429,30 @@ export default function GamesPage() {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
-    setUserProfile(null);
-    setPoints(0);
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-      duration: 3000,
-    });
-    playSound("success");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setPoints(0);
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+        duration: 3000,
+      });
+      playSound("success");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still clear local state even if API call fails
+      setIsAuthenticated(false);
+      setUserProfile(null);
+      setPoints(0);
+      toast({
+        title: "Logged Out",
+        description: "You have been logged out locally.",
+        duration: 3000,
+      });
+    }
   };
 
   const handleSignIn = () => {
@@ -977,10 +990,10 @@ export default function GamesPage() {
               {categories.map((category) => (
                 <AnimatedButton
                   key={category}
-                  className={`px-6 py-3 border-3 text-lg ${
+                  className={`px-6 py-3 border-3 text-lg text-white ${
                     selectedCategory === category
-                      ? "border-yellow-400 bg-yellow-400 bg-opacity-20 text-yellow-400"
-                      : "border-white hover:border-yellow-400"
+                      ? "border-yellow-400 bg-yellow-400 bg-opacity-30 text-black font-bold"
+                      : "border-white hover:border-yellow-400 hover:text-yellow-400"
                   }`}
                   onClick={() => {
                     setSelectedCategory(category);

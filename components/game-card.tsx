@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Users, Coins, Zap } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { AnimatedButton } from "./animated-button";
 import { useTheme } from "./theme-provider";
 
@@ -21,9 +20,10 @@ interface GameCardProps {
   };
   onHover?: () => void;
   onClick?: () => void;
+  onJoinGame?: () => void;
 }
 
-export function GameCard({ game, onHover, onClick }: GameCardProps) {
+export function GameCard({ game, onHover, onClick, onJoinGame }: GameCardProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -94,13 +94,12 @@ export function GameCard({ game, onHover, onClick }: GameCardProps) {
           </div>
         </div>
 
-        <Link href={`coming-soon`}>
-          <AnimatedButton
-            className={`arcade-btn bg-[hsl(var(--accent-purple))] text-white px-5 py-3 w-full border-3 border-[hsl(var(--accent-purple)/0.7)] hover:bg-[hsl(var(--accent-purple)/0.9)] transition-colors text-lg`}
-          >
-            {game.status === "live" ? "JOIN GAME" : "PLAY NOW"}
-          </AnimatedButton>
-        </Link>
+        <AnimatedButton
+          className={`arcade-btn bg-[hsl(var(--accent-purple))] text-white px-5 py-3 w-full border-3 border-[hsl(var(--accent-purple)/0.7)] hover:bg-[hsl(var(--accent-purple)/0.9)] transition-colors text-lg`}
+          onClick={onJoinGame ?? onClick}
+        >
+          {game.status === "live" ? "JOIN GAME" : "PLAY NOW"}
+        </AnimatedButton>
       </div>
     </motion.div>
   );
