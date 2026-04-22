@@ -604,7 +604,6 @@ export default function Home() {
                   <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-yellow))]"></div>
                 )}
               </motion.div>
-
             </div>
 
             {!walletConnected && (
@@ -658,7 +657,6 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
-
         </section>
 
         {/* Game Showcase Section */}
@@ -753,7 +751,8 @@ export default function Home() {
                         className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
                         onHover={() => playSound("hover")}
                       >
-                        VIEW ALL GAMES<ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
+                        VIEW ALL GAMES
+                        <ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
                       </AnimatedButton>
                     </Link>
                   </div>
@@ -941,7 +940,7 @@ export default function Home() {
                           className="object-contain p-2"
                         />
                       </div>
-                    )
+                    ),
                   )}
                 </motion.div>
               </div>
@@ -971,7 +970,7 @@ export default function Home() {
                           className="object-contain p-2"
                         />
                       </div>
-                    )
+                    ),
                   )}
                 </motion.div>
               </div>
@@ -1026,8 +1025,9 @@ export default function Home() {
                   Choose Your Challenge
                 </h3>
                 <p className="text-lg text-foreground/70">
-                  Select from a lineup of classic arcade games. Place your bets, compete against
-                  other players, and have a the thrill of retro gaming.
+                  Select from a lineup of classic arcade games. Place your bets,
+                  compete against other players, and have a the thrill of retro
+                  gaming.
                 </p>
               </motion.div>
 
@@ -1042,7 +1042,8 @@ export default function Home() {
                 <Coins className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
                 <h3 className="text-2xl font-bold mb-4">WIN POINTS</h3>
                 <p className="text-lg text-foreground/70">
-                  Win matches, top the leaderboards, and watch yourself grow with every victory.
+                  Win matches, top the leaderboards, and watch yourself grow
+                  with every victory.
                 </p>
               </motion.div>
             </div>
@@ -1149,7 +1150,6 @@ export default function Home() {
           </div>
 
           <div className="max-w-5xl mx-auto relative">
-
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
@@ -1167,8 +1167,8 @@ export default function Home() {
               </h2>
 
               <p className="text-2xl text-foreground/80 mb-10 max-w-3xl mx-auto">
-                Experience the fusion of retro gaming.
-                Play, compete, and earn like never before.
+                Experience the fusion of retro gaming. Play, compete, and earn
+                like never before.
               </p>
 
               {!walletConnected ? (

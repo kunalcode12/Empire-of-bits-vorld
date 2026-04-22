@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type MouseEvent as ReactMouseEvent } from "react";
 import {
   Gamepad2,
   Bell,
@@ -402,6 +402,34 @@ export default function Header({
       console.error("Authentication check failed:", error);
       window.location.href = "/signup";
     }
+  };
+
+  const handleNavItemClick = async (
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    itemName: string,
+    itemHref: string,
+    closeMobileMenu = false
+  ) => {
+    playSound("click");
+
+    if (closeMobileMenu) {
+      setMenuOpen(false);
+    }
+
+    // Keep Home and Points public. Protect Games/Profile with wallet + auth.
+    if (itemName !== "games" && itemName !== "profile") {
+      setActiveNavItem(itemName);
+      return;
+    }
+
+    event.preventDefault();
+
+    if (!ensureWalletConnected()) {
+      return;
+    }
+
+    setActiveNavItem(itemName);
+    await checkAuthentication(itemHref);
   };
 
  const navItems = [
@@ -821,9 +849,8 @@ export default function Header({
                             : "text-foreground/70 hover:text-foreground"
                         }`}
                         onMouseEnter={() => playSound("hover")}
-                        onClick={() => {
-                          setActiveNavItem(item.name);
-                          playSound("click");
+                        onClick={(event) => {
+                          handleNavItemClick(event, item.name, item.href);
                         }}
                       >
                         {activeNavItem === item.name && (
@@ -1031,10 +1058,13 @@ export default function Header({
                               ? "bg-gradient-to-r from-purple-500 to-yellow-500 text-white"
                               : "bg-foreground/5 text-foreground hover:bg-foreground/10"
                           }`}
-                          onClick={() => {
-                            setActiveNavItem(item.name);
-                            setMenuOpen(false);
-                            playSound("click");
+                          onClick={(event) => {
+                            handleNavItemClick(
+                              event,
+                              item.name,
+                              item.href,
+                              true
+                            );
                           }}
                         >
                           <div className="w-8 h-8 rounded-full bg-background/50 flex items-center justify-center">
