@@ -1,7 +1,7 @@
 # Empire of Bits
 
-[![Games](https://img.shields.io/badge/Games-4%2B-orange)](https://www.empireofbits.fun/)
-[![Demo Video](https://img.shields.io/badge/Demo-Video-red)](https://youtu.be/-_Y8EqwrlSI?si=Sz88b-nDsUHe9HLO )
+[![Games](https://img.shields.io/badge/Games-4%2B-orange)](https://www.empireofbits.xyz/)
+[![Demo Video](https://img.shields.io/badge/Demo-Video-red)](https://youtu.be/-_Y8EqwrlSI?si=Sz88b-nDsUHe9HLO)
 [![Demo Video](https://img.shields.io/badge/SpaceInvader-Video-green)](https://youtu.be/hKCFJtuqRSk?si=CwrtaBze2tqasU4d)
 [![Demo Video](https://img.shields.io/badge/AxeArcade-Video-purple)](https://youtu.be/RiXZHormR8o?si=b4Wk3Gch3bt7a3lF)
 [![Demo Video](https://img.shields.io/badge/Battleship-Video-yellow)](https://youtu.be/httXc1X49b4?si=PbHNGJz4SXybay2G)
@@ -23,8 +23,7 @@ Empire of Bits is an interoperable arcade gaming ecosystem leveraging the Airdro
 
 **Our core innovation: The Viewer-Influence Loop** — an innovative mechanic where live stream viewers spend platform-provided Airdrop Arcade Credits to directly trigger game-changing events, making every gameplay session unique, unpredictable, and highly social.
 
-_[Play Now on Solana Devnet](https://www.empireofbits.fun/)_
-
+_[Play Now on Solana Devnet](https://www.empireofbits.xyz/)_
 
 ## 🔍 The Problem
 
@@ -61,50 +60,46 @@ Our submission includes playable builds demonstrating the Viewer-Influence Loop 
 
 ### Game 1: Space Invader (Arcade Shooter)
 
-| Package Type | Name            | Effect                                                                      |
-| ------------ | --------------- | --------------------------------------------------------------------------- |
-| Immediate    | Overclock       | Player's ship shoots twice as fast and fires triple-shot for 6s              |
-| Immediate    | Guardian Shield | Creates a rotating energy shield that blocks 3 enemy bullets/hits            |
-| Immediate    | Thunder Strike  | Lightning bolts randomly zap enemies in the top rows for 3s                 |
-| Immediate    | Precision Mode  | Slow-motion (0.6× speed) for everyone except the player, for 4s             |
-| Cycle        | Frenzy Mode     | Player moves and shoots 1.5× faster; score multiplier ×2 during effect      |
-| Cycle        | Rain Drop       | A continuous shower of bonus points rains down for collection               |
-
+| Package Type | Name            | Effect                                                                 |
+| ------------ | --------------- | ---------------------------------------------------------------------- |
+| Immediate    | Overclock       | Player's ship shoots twice as fast and fires triple-shot for 6s        |
+| Immediate    | Guardian Shield | Creates a rotating energy shield that blocks 3 enemy bullets/hits      |
+| Immediate    | Thunder Strike  | Lightning bolts randomly zap enemies in the top rows for 3s            |
+| Immediate    | Precision Mode  | Slow-motion (0.6× speed) for everyone except the player, for 4s        |
+| Cycle        | Frenzy Mode     | Player moves and shoots 1.5× faster; score multiplier ×2 during effect |
+| Cycle        | Rain Drop       | A continuous shower of bonus points rains down for collection          |
 
 ### Game 2: Axe Arcade (Aiming Challenge)
 
-| Package Type | Name            | Effect                                                                      |
-| ------------ | --------------- | --------------------------------------------------------------------------- |
-| Immediate    | Rain of Mini-Axes | Unleash a storm of tiny axes that rain down on your targets              |
-| Immediate    | Clone Throw     | Duplicate your throw; every toss creates multiple synchronized axes         |
-| Immediate    | Slow-Motion Zone | Enter bullet-time: everything slows down except player reflexes           |
-| Immediate    | Extra-Axe       | Gain an additional axe throw opportunity this round                         |
-| Cycle        | Giant Target    | Targets become huge, giving a massive edge in accuracy for the duration      |
-| Cycle        | Balloon Storm   | Colorful, moving balloons fill the arena; pop them for bonus points         |
-
+| Package Type | Name              | Effect                                                                  |
+| ------------ | ----------------- | ----------------------------------------------------------------------- |
+| Immediate    | Rain of Mini-Axes | Unleash a storm of tiny axes that rain down on your targets             |
+| Immediate    | Clone Throw       | Duplicate your throw; every toss creates multiple synchronized axes     |
+| Immediate    | Slow-Motion Zone  | Enter bullet-time: everything slows down except player reflexes         |
+| Immediate    | Extra-Axe         | Gain an additional axe throw opportunity this round                     |
+| Cycle        | Giant Target      | Targets become huge, giving a massive edge in accuracy for the duration |
+| Cycle        | Balloon Storm     | Colorful, moving balloons fill the arena; pop them for bonus points     |
 
 ### Game 3: Candy Crush (Puzzle/Casual)
 
-| Package Type | Name            | Effect                                                                      |
-| ------------ | --------------- | --------------------------------------------------------------------------- |
-| Immediate    | Colour Bomb     | Clear all candies of a single color from the board                          |
-| Immediate    | Sweet Teeth     | Candy-eating chompers chew through blockers, chocolate, and jelly            |
-| Immediate    | Lollipop Hammer | Smash any candy or blocker instantly with a single tap                       |
-| Cycle        | Free Switch     | Swap two candies without consuming a move (limited duration)                |
-| Cycle        | 5X Moves        | Get five additional moves to finish the current level                       |
-
+| Package Type | Name            | Effect                                                            |
+| ------------ | --------------- | ----------------------------------------------------------------- |
+| Immediate    | Colour Bomb     | Clear all candies of a single color from the board                |
+| Immediate    | Sweet Teeth     | Candy-eating chompers chew through blockers, chocolate, and jelly |
+| Immediate    | Lollipop Hammer | Smash any candy or blocker instantly with a single tap            |
+| Cycle        | Free Switch     | Swap two candies without consuming a move (limited duration)      |
+| Cycle        | 5X Moves        | Get five additional moves to finish the current level             |
 
 ### Game 4: Battleship (Strategy)
 
-| Package Type | Name            | Effect                                                                      |
-| ------------ | --------------- | --------------------------------------------------------------------------- |
-| Immediate    | Bomb            | Drop a high-impact explosive to damage a large 3×3 grid area               |
-| Immediate    | Sonar Ping      | Detect partially hidden enemy ships within a small radius                   |
-| Immediate    | Radar Ping      | A wide-area radar sweep reveals an entire section of the map                |
-| Immediate    | Guided Missile  | Locks onto and destroys the nearest detected enemy ship segment             |
-| Cycle        | Rapid Fire      | Unleash a burst of consecutive shots across targeted coordinates            |
-| Cycle        | Repair Drone    | Repair damaged sections of your own ships over time                          |
-
+| Package Type | Name           | Effect                                                           |
+| ------------ | -------------- | ---------------------------------------------------------------- |
+| Immediate    | Bomb           | Drop a high-impact explosive to damage a large 3×3 grid area     |
+| Immediate    | Sonar Ping     | Detect partially hidden enemy ships within a small radius        |
+| Immediate    | Radar Ping     | A wide-area radar sweep reveals an entire section of the map     |
+| Immediate    | Guided Missile | Locks onto and destroys the nearest detected enemy ship segment  |
+| Cycle        | Rapid Fire     | Unleash a burst of consecutive shots across targeted coordinates |
+| Cycle        | Repair Drone   | Repair damaged sections of your own ships over time              |
 
 ## 🚀 Why Airdrop Arcade?
 
@@ -114,7 +109,6 @@ The Airdrop Arcade platform is the perfect fit for real-time viewer influence:
 - **Real-Time API**: Low-latency Solana-based API enables instant processing of viewer input with minimal delay
 - **Seamless Integration**: Cuts out friction associated with setting up separate on-chain wallets or complex applications
 - **Competitive Advantage**: Moves beyond simple chat emotes or polls—viewers become direct co-creators of gameplay
-
 
 ## 🏆 Competitive Advantage
 
@@ -174,10 +168,6 @@ Led by a passionate team of blockchain enthusiasts and gaming veterans with expe
 - _Kunal_ - Lead Game Developer
   - [GitHub](https://github.com/kunalcode12)
   - [Twitter](https://x.com/KunalSharm89327)
-
-- _Ayush_ - Full Stack Developer
-  - [GitHub](https://github.com/Ayushjhax)
-  - [Twitter](https://x.com/Ayushajhax)
 
 ## 📞 Contact
 
