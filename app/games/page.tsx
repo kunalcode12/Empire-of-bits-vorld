@@ -63,7 +63,7 @@ export default function GamesPage() {
   const [arenaGameState, setArenaGameState] = useState<GameState | null>(null);
   const [arenaInitializing, setArenaInitializing] = useState(false);
   const [arenaInitMessage, setArenaInitMessage] = useState(
-    "INITIALIZING ARENA..."
+    "INITIALIZING ARENA...",
   );
 
   const categories = [
@@ -87,7 +87,7 @@ export default function GamesPage() {
       prize: 0.12,
       players: 1,
       status: "waiting",
-      route: "https://spaceinvaders.empireofbits.fun/",
+      route: "https://spaceinvaders.empireofbits.xyz/",
     },
     {
       id: 2,
@@ -99,7 +99,7 @@ export default function GamesPage() {
       prize: 0.2,
       players: 0,
       status: "live",
-      route: "https://chess.empireofbits.fun/",
+      route: "https://chess.empireofbits.xyz/",
     },
     {
       id: 3,
@@ -123,7 +123,7 @@ export default function GamesPage() {
       prize: 0.15,
       players: 2,
       status: "live",
-      route: "https://battleship.empireofbits.fun/",
+      route: "https://battleship.empireofbits.xyz/",
     },
 
     {
@@ -148,7 +148,7 @@ export default function GamesPage() {
       prize: 0.3,
       players: 3,
       status: "live",
-      route: "https://axeascend.empireofbits.fun/",
+      route: "https://axeascend.empireofbits.xyz/",
     },
     {
       id: 78,
@@ -203,10 +203,11 @@ export default function GamesPage() {
 
   const filteredGames = games
     .filter(
-      (game) => selectedCategory === "All" || game.category === selectedCategory
+      (game) =>
+        selectedCategory === "All" || game.category === selectedCategory,
     )
     .filter((game) =>
-      game.title.toLowerCase().includes(searchQuery.toLowerCase())
+      game.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
   const playSound = (sound: string) => {
@@ -225,7 +226,7 @@ export default function GamesPage() {
 
       // Make API call to your backend
       const response = await fetch(
-        "https://backend.empireofbits.fun/api/v1/users",
+        "https://backend-em-b0an.onrender.com/api/v1/users",
         {
           method: "POST",
           headers: {
@@ -234,7 +235,7 @@ export default function GamesPage() {
           body: JSON.stringify({
             userId: walletAddress,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -254,11 +255,11 @@ export default function GamesPage() {
   const updateUserPointsInBackend = async (
     userId: string,
     points: number,
-    operation: string
+    operation: string,
   ) => {
     try {
       const response = await fetch(
-        `https://backend.empireofbits.fun/api/v1/users/${userId}/points`,
+        `https://backend-em-b0an.onrender.com/api/v1/users/${userId}/points`,
         {
           method: "PUT",
           headers: {
@@ -268,7 +269,7 @@ export default function GamesPage() {
             points,
             operation,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -323,7 +324,7 @@ export default function GamesPage() {
       await updateUserPointsInBackend(
         walletAddress as string,
         game.pointsRequired,
-        "deduct"
+        "deduct",
       );
 
       // Update local state
@@ -350,7 +351,7 @@ export default function GamesPage() {
         const su = localStorage.getItem("streamUrl") || "";
 
         const url = `${game.route}?wallet=${encodeURIComponent(
-          wallet
+          wallet,
         )}&authToken=${encodeURIComponent(authToken)}${
           su ? `&streamUrl=${encodeURIComponent(su)}` : ""
         }`;
@@ -1041,15 +1042,15 @@ export default function GamesPage() {
                         game.status === "live"
                           ? "bg-red-600"
                           : game.status === "waiting"
-                          ? "bg-yellow-600"
-                          : "bg-purple-600"
+                            ? "bg-yellow-600"
+                            : "bg-purple-600"
                       }`}
                     >
                       {game.status === "live"
                         ? "LIVE"
                         : game.status === "waiting"
-                        ? "WAITING"
-                        : "COMING SOON"}
+                          ? "WAITING"
+                          : "COMING SOON"}
                     </span>
                   </div>
 
@@ -1110,8 +1111,8 @@ export default function GamesPage() {
                       {game.status === "live"
                         ? "JOIN GAME"
                         : game.status === "waiting"
-                        ? "PLAY NOW"
-                        : "COMING SOON"}
+                          ? "PLAY NOW"
+                          : "COMING SOON"}
                     </ParticleButton>
                   ) : (
                     <Link href={"/coming-soon-games"}>

@@ -159,7 +159,7 @@ export default function ProfilePage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `https://backend.empireofbits.fun/api/v1/users/${userId}/games`
+        `https://backend-em-b0an.onrender.com/api/v1/users/${userId}/games`,
       );
       const data = await response.json();
       console.log("Game data fetched:", data);
@@ -382,7 +382,7 @@ export default function ProfilePage() {
                         <span>LAST LOGIN:</span>
                         <span className="text-white font-mono text-xs">
                           {new Date(
-                            vorldProfile.lastLogin
+                            vorldProfile.lastLogin,
                           ).toLocaleDateString()}
                         </span>
                       </div>
@@ -483,7 +483,7 @@ export default function ProfilePage() {
                               </span>
                               <span className="text-xs text-white">
                                 {formatNumber(
-                                  gameData.games.CandyCrush.totalPoints
+                                  gameData.games.CandyCrush.totalPoints,
                                 )}
                               </span>
                             </div>
@@ -574,7 +574,7 @@ export default function ProfilePage() {
                               </span>
                               <span className="text-xs text-white">
                                 {formatNumber(
-                                  gameData.games.battleship.totalPoints
+                                  gameData.games.battleship.totalPoints,
                                 )}
                               </span>
                             </div>
@@ -589,7 +589,7 @@ export default function ProfilePage() {
                                         (gameData.games.battleship.gamesWon /
                                           gameData.games.battleship
                                             .totalGames) *
-                                          100
+                                          100,
                                       )
                                     : 0}
                                   %
@@ -646,7 +646,7 @@ export default function ProfilePage() {
                               </span>
                               <span className="text-xs text-white">
                                 {formatNumber(
-                                  gameData.games.spaceinvaders.highScore
+                                  gameData.games.spaceinvaders.highScore,
                                 )}
                               </span>
                             </div>
@@ -656,7 +656,7 @@ export default function ProfilePage() {
                               </span>
                               <span className="text-xs text-white">
                                 {formatNumber(
-                                  gameData.games.spaceinvaders.totalPoints
+                                  gameData.games.spaceinvaders.totalPoints,
                                 )}
                               </span>
                             </div>
@@ -664,7 +664,7 @@ export default function ProfilePage() {
                               LAST PLAYED:{" "}
                               {new Date(
                                 gameData.games.spaceinvaders.gameHistory[0]
-                                  ?.playedAt || Date.now()
+                                  ?.playedAt || Date.now(),
                               ).toLocaleDateString()}
                             </div>
                           </div>
@@ -817,7 +817,7 @@ export default function ProfilePage() {
                                 </span>
                                 <span className="text-xs text-white font-mono">
                                   {new Date(
-                                    vorldProfile.createdAt
+                                    vorldProfile.createdAt,
                                   ).toLocaleDateString()}
                                 </span>
                               </div>
@@ -827,7 +827,7 @@ export default function ProfilePage() {
                                 </span>
                                 <span className="text-xs text-white font-mono">
                                   {new Date(
-                                    vorldProfile.lastLogin
+                                    vorldProfile.lastLogin,
                                   ).toLocaleDateString()}
                                 </span>
                               </div>
@@ -1036,7 +1036,7 @@ export default function ProfilePage() {
                                       : "NOT CONNECTED"}
                                   </div>
                                 </motion.div>
-                              )
+                              ),
                             )}
                           </div>
                         </motion.div>
@@ -1075,7 +1075,7 @@ export default function ProfilePage() {
                                       <div className="text-xs text-gray-500">
                                         Created:{" "}
                                         {new Date(
-                                          wallet.createdAt
+                                          wallet.createdAt,
                                         ).toLocaleDateString()}
                                       </div>
                                     </div>

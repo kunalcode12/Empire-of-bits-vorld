@@ -35,7 +35,7 @@ export default function PointsExchangePage() {
         const operation = delta > 0 ? "add" : "deduct";
 
         const response = await fetch(
-          `https://backend.empireofbits.fun/api/v1/users/${walletAddress}/points`,
+          `https://backend-em-b0an.onrender.com/api/v1/users/${walletAddress}/points`,
           {
             method: "PUT",
             headers: {
@@ -45,7 +45,7 @@ export default function PointsExchangePage() {
               points: Math.abs(delta),
               operation,
             }),
-          }
+          },
         );
 
         const data = await response.json();
@@ -60,7 +60,7 @@ export default function PointsExchangePage() {
         setIsSyncing(false);
       }
     },
-    [walletAddress]
+    [walletAddress],
   );
 
   const fetchUserPoints = useCallback(async () => {
@@ -71,7 +71,7 @@ export default function PointsExchangePage() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "https://backend.empireofbits.fun/api/v1/users",
+        "https://backend-em-b0an.onrender.com/api/v1/users",
         {
           method: "POST",
           headers: {
@@ -80,7 +80,7 @@ export default function PointsExchangePage() {
           body: JSON.stringify({
             userId: walletAddress,
           }),
-        }
+        },
       );
 
       const data = await response.json();

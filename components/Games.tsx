@@ -52,7 +52,7 @@ export default function Games() {
   const [levelData, setLevelData] = useState<LevelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [redirectTimer, setRedirectTimer] = useState<NodeJS.Timeout | null>(
-    null
+    null,
   );
   const [pointsEarned, setPointsEarned] = useState(0);
   const [showBoostPopup, setShowBoostPopup] = useState<{
@@ -192,14 +192,14 @@ export default function Games() {
       try {
         // Get game data to get this level's target score
         const response = await fetch(
-          "https://backend.empireofbits.fun/api/v1/games/candycrush",
+          "https://backend-em-b0an.onrender.com/api/v1/games/candycrush",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ userId }),
-          }
+          },
         );
         const data = await response.json();
         console.log("Game data fetched:", data);
@@ -220,7 +220,7 @@ export default function Games() {
         const game: GameData = gameData;
 
         const currentLevel: GameLevel | undefined = game.levels.find(
-          (level) => level.levelNumber === levelId
+          (level) => level.levelNumber === levelId,
         );
 
         if (currentLevel) {
@@ -386,7 +386,7 @@ export default function Games() {
 
       // Find the first player with eligible packages
       const playerWithPackage = playerPackageDrops.find(
-        (p: any) => p.eligiblePackages && p.eligiblePackages.length > 0
+        (p: any) => p.eligiblePackages && p.eligiblePackages.length > 0,
       );
 
       if (!playerWithPackage) return;
@@ -452,7 +452,7 @@ export default function Games() {
           (stat: any) =>
             stat?.name?.toLowerCase().includes("switch") ||
             stat?.description?.toLowerCase().includes("switch") ||
-            stat?.description?.toLowerCase().includes("swap")
+            stat?.description?.toLowerCase().includes("swap"),
         )
       ) {
         setTimeout(() => {
@@ -544,7 +544,7 @@ export default function Games() {
             stat?.description?.toLowerCase().includes("gobble") ||
             stat?.description?.toLowerCase().includes("chocolate") ||
             stat?.description?.toLowerCase().includes("licorice") ||
-            stat?.description?.toLowerCase().includes("jelly")
+            stat?.description?.toLowerCase().includes("jelly"),
         )
       ) {
         setTimeout(() => {
@@ -567,7 +567,7 @@ export default function Games() {
             stat?.name?.toLowerCase().includes("smash") ||
             stat?.description?.toLowerCase().includes("smash") ||
             stat?.description?.toLowerCase().includes("destroy") ||
-            stat?.description?.toLowerCase().includes("click")
+            stat?.description?.toLowerCase().includes("click"),
         )
       ) {
         setTimeout(() => {
@@ -656,10 +656,10 @@ export default function Games() {
     return statusLabel === "live"
       ? "bg-green-900/70 border-green-400 text-green-300"
       : statusLabel === "pending"
-      ? "bg-pink-900/50 border-pink-400 text-yellow-200"
-      : statusLabel === "completed"
-      ? "bg-blue-900/50 border-blue-300 text-blue-200"
-      : "bg-gray-800 border-gray-500 text-gray-300";
+        ? "bg-pink-900/50 border-pink-400 text-yellow-200"
+        : statusLabel === "completed"
+          ? "bg-blue-900/50 border-blue-300 text-blue-200"
+          : "bg-gray-800 border-gray-500 text-gray-300";
   }
 
   const handleStartArena = async () => {
@@ -760,7 +760,7 @@ export default function Games() {
       const res = await arena.updateStreamUrl(
         arenaGameState.gameId,
         newStreamUrl,
-        currentStreamUrl
+        currentStreamUrl,
       );
       if (res.success) {
         setCurrentStreamUrl(newStreamUrl);
@@ -823,7 +823,7 @@ export default function Games() {
 
     try {
       const response = await fetch(
-        `https://backend.empireofbits.fun/api/v1/games/candycrush/${userId}/level`,
+        `https://backend-em-b0an.onrender.com/api/v1/games/candycrush/${userId}/level`,
         {
           method: "PUT",
           headers: {
@@ -835,7 +835,7 @@ export default function Games() {
             stars,
             cleared: isLevelCompleted,
           }),
-        }
+        },
       );
 
       // Update points earned for display in the modal
@@ -849,7 +849,7 @@ export default function Games() {
       if (isLevelCompleted) {
         const timer = setTimeout(() => {
           router.push(
-            `/?gameWon=true&gameName=candycrush&pointsEarned=${data.pointsEarned}`
+            `/?gameWon=true&gameName=candycrush&pointsEarned=${data.pointsEarned}`,
           );
         }, 2000);
         setRedirectTimer(timer);
@@ -1215,8 +1215,8 @@ export default function Games() {
               {monitorArenaActive
                 ? "ARENA LIVE!"
                 : monitorCountdown !== null
-                ? `ARENA COUNTDOWN: ${monitorCountdown}s`
-                : arenaGameState?.status?.toUpperCase() || "WAITING"}
+                  ? `ARENA COUNTDOWN: ${monitorCountdown}s`
+                  : arenaGameState?.status?.toUpperCase() || "WAITING"}
             </span>
           </div>
           {/* Most recent up to 4 events */}
