@@ -1,4 +1,4 @@
-const Platformer = require('../models/platformer');
+const Platformer = require('../models/Platformer');
 const User = require('../models/User');
 const { ErrorResponse } = require('../utils/errorHandler');
 const mongoose = require('mongoose');
