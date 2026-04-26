@@ -182,6 +182,63 @@ We welcome contributions from the community! Check out our [contributing guideli
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Colosseum Copilot Integration
+
+This project includes a server-side Colosseum Copilot integration so you can verify your Personal Access Token and search Solana hackathon projects without exposing the token to the browser.
+
+### 1. Configure environment variables
+
+Add these values to your local `.env` file:
+
+```bash
+COLOSSEUM_COPILOT_API_BASE=https://copilot.colosseum.com/api/v1
+COLOSSEUM_COPILOT_PAT=your-token-here
+```
+
+Generate the PAT from Colosseum Arena and keep it private. The token is read only on the server.
+
+### 2. Verify the connection from this app
+
+Start the app, then call:
+
+```bash
+curl http://localhost:3000/api/colosseum/status
+```
+
+You should receive a JSON response with `success: true` and the upstream Colosseum authentication payload inside `data`.
+
+### 3. Run your first Copilot project query
+
+```bash
+curl -X POST http://localhost:3000/api/colosseum/search/projects \
+  -H "Content-Type: application/json" \
+  -d "{\"query\":\"What Solana hackathon projects have worked on gasless transactions?\",\"limit\":8,\"diversify\":true}"
+```
+
+This route forwards your request to Colosseum Copilot and returns the upstream search response inside `data`.
+
+### 4. What was added
+
+- `lib/colosseum-copilot.ts` - typed server-side Copilot client with a 15 second timeout and clear error messages
+- `GET /api/colosseum/status` - verifies that the PAT is configured and still valid
+- `POST /api/colosseum/search/projects` - searches the Colosseum project corpus from your app backend
+
+### 5. Codex skill
+
+The `colosseum-copilot` skill is already present in this workspace, so you can use it from Codex in parallel with the in-app API integration.
+
+### 6. Terminal usage
+
+You can now ask Copilot questions directly from the terminal:
+
+```bash
+npm run copilot -- --status
+npm run copilot -- "generate the project's Crowdedness Score"
+npm run copilot
+```
+
+With no question, the command starts an interactive terminal prompt. The script reads `COLOSSEUM_COPILOT_API_BASE` and `COLOSSEUM_COPILOT_PAT` from your shell, `.env.local`, `.env`, or `~/.superstack/config.json`.
+
 ---
 
 **Empire of Bits** — Where Every Game Matters. Transforming passive viewing into active, collaborative chaos.

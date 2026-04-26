@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "export": "next export",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copilot": "node scripts/colosseum-copilot-chat.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.5",
