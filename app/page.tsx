@@ -1339,63 +1339,35 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* <div>
+          <div className="mt-6 md:mt-8">
             <h3 className="text-xl font-bold mb-6 border-b-2 border-gray-800 pb-3">
-              RESOURCES
+              LEGAL
             </h3>
             <ul className="space-y-4">
               <li>
                 <Link
-                  href="/help"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
+                  href="/terms-of-use"
+                  className="text-lg text-foreground/60 hover:text-foreground transition-colors flex items-center group"
                   onMouseEnter={() => playSound("hover")}
+                  onClick={() => playSound("click")}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Help Center
+                  Terms of Use
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/faq"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
+                  href="/privacy-policy"
+                  className="text-lg text-foreground/60 hover:text-foreground transition-colors flex items-center group"
                   onMouseEnter={() => playSound("hover")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
+                  onClick={() => playSound("click")}
                 >
                   <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                   Privacy Policy
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Contact Us
-                </Link>
-              </li>
             </ul>
-          </div> */}
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t-2 border-gray-800 text-center">
