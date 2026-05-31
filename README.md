@@ -21,6 +21,8 @@
 
 Empire of Bits is an interoperable arcade gaming ecosystem leveraging the Airdrop Arcade platform. We're revolutionizing blockchain gaming by creating a unified ecosystem where players can seamlessly move between games while maintaining their assets, progress, and rewards. Our collection of interconnected arcade games on Solana share a common economy, enabling true interoperability and enhanced player experiences.
 
+Built on Solana, Empire of Bits creates a scalable framework where multiple games share a common economy, progression layer, and creator ecosystem.
+
 **Our core innovation: The Viewer-Influence Loop** — an innovative mechanic where live stream viewers spend platform-provided Airdrop Arcade Credits to directly trigger game-changing events, making every gameplay session unique, unpredictable, and highly social.
 
 _[Play Now on Solana Devnet](https://www.empireofbits.xyz/)_
@@ -49,7 +51,7 @@ Our core solution addresses the hackathon's mission to build games where viewers
 
 ### Key Features
 
-- **Real-Time Interaction**: Low-latency Solana-based API allows instant processing of viewer input
+- **Real-Time Interaction**:Low-latency Solana-based API allows instant processing of viewer input
 - **Direct Viewer Engagement**: Streamlined interface cuts out friction associated with separate wallets or complex applications
 - **Game-Changing Events**: Viewers can spawn bosses, give shields, alter game speed, and more
 - **Cross-Game Ecosystem**: Common influence currency and shared player identity across all games
@@ -146,6 +148,21 @@ We've integrated the Airdrop Arcade platform to enable real-time viewer influenc
 
 - _Airdrop Arcade Platform_: [Airdrop Arcade](https://airdroparcade.com/)
 - _Arena Portal_: [Viewer & Streamer Interface](https://arena-ioa-frontend.vercel.app/)
+
+## 🛡 Security Considerations
+
+Wallet Security
+- No private keys are stored
+- Users sign transactions locally
+
+Backend Security
+- Server-side token validation
+- Rate limiting on influence actions
+- Replay attack protection
+
+Smart Contract Security
+
+- Future audits planned before Q3.
 
 ## 💼 Monetization Strategy (Future Model)
 

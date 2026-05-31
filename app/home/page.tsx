@@ -1022,11 +1022,26 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-gray-800 py-8 px-6 md:px-8 bg-black/50 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
             <span className="text-xl font-bold">
               <GlitchText text="EMPIRE OF BITS" />
             </span>
+          </div>
+          <div className="flex items-center gap-6 text-sm">
+            <Link
+              href="/terms-of-use"
+              className="text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-blue-400 transition-colors"
+            >
+              Terms of Use
+            </Link>
+            <span className="text-gray-700">|</span>
+            <Link
+              href="/privacy-policy"
+              className="text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-400 hover:to-blue-400 transition-colors"
+            >
+              Privacy Policy
+            </Link>
           </div>
           <div className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Empire of Bits. All rights reserved.
