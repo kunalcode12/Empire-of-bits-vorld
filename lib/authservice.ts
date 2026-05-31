@@ -229,6 +229,7 @@ export class VorldAuthService {
       return {
         success: false,
         error: error.response?.data?.error || error.response?.data?.message || "Failed to get profile",
+        status: error.response?.status,
       };
     }
   }

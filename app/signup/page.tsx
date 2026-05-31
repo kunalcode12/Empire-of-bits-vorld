@@ -106,6 +106,8 @@ export default function EmailLogin() {
     try {
       const result = await authService.loginWithEmailOTP(email, otp);
       if (result.success) {
+        // TEMP: profile API is broken, persist email locally so games page can display it
+        localStorage.setItem("userEmail", email);
         toast({
           title: "Login Successful!",
           description: "Welcome to Empire of Bits!",

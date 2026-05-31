@@ -401,6 +401,26 @@ export default function Header({
         // User is authenticated, navigate to intended page
         window.location.href = intendedHref;
       } else {
+        // TEMP: distinguish a 500 server error from a real auth failure. The
+        // Vorld profile route is currently 500-ing; on that specific status,
+        // fall back to localStorage tokens so existing logged-in users aren't
+        // bounced. Any other failure (401, missing token, etc.) is treated as
+        // not authenticated. Remove the 500 branch once the route is healthy.
+        const status = (profile as any).status;
+        console.log(
+          "profile fetch failed — status:",
+          status,
+          "error:",
+          profile.error,
+        );
+        if (status === 500 && typeof window !== "undefined") {
+          const authToken = localStorage.getItem("authToken");
+          const userEmail = localStorage.getItem("userEmail");
+          if (authToken && userEmail) {
+            window.location.href = intendedHref;
+            return;
+          }
+        }
         // User is not authenticated, redirect to signup
         window.location.href = "/signup";
       }

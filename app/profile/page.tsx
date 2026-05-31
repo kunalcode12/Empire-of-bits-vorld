@@ -721,6 +721,25 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ) : vorldError ? (
+                      // TEMP: Vorld profile API is broken — show a work-in-progress
+                      // placeholder instead of the error/redirect UI. Restore the
+                      // original error block below once the profile route works.
+                      <div className="text-center py-12">
+                        <div className="text-yellow-300 mb-4">
+                          <Clock className="h-12 w-12 mx-auto mb-2 animate-pulse" />
+                          <div className="text-lg font-mono">
+                            WORK IN PROGRESS
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-300 mb-2">
+                          Vorld profile service is being upgraded.
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Please check back later.
+                        </div>
+                      </div>
+                    ) : /* ORIGINAL ERROR UI — restore when profile API works
+                    vorldError ? (
                       <div className="text-center py-8">
                         <div className="text-red-400 mb-4">
                           <Shield className="h-12 w-12 mx-auto mb-2" />
@@ -750,7 +769,8 @@ export default function ProfilePage() {
                           )}
                         </div>
                       </div>
-                    ) : vorldProfile ? (
+                    ) : */
+                    vorldProfile ? (
                       <div className="space-y-6">
                         {/* Basic Information */}
                         <motion.div

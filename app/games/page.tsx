@@ -382,18 +382,33 @@ export default function GamesPage() {
     (async () => {
       try {
         const walletAddress = localStorage.getItem("walletAddress");
-        const profile = await authService.getProfile();
+        // TEMP: profile API is broken — substitute profile.success with
+        // localStorage authToken+userEmail presence. Once the Vorld profile
+        // route works, swap hasLocalAuth back to (await getProfile()).success
+        // using the commented block below.
+        const authToken = localStorage.getItem("authToken");
+        const userEmail = localStorage.getItem("userEmail");
+        const hasLocalAuth = !!(authToken && userEmail);
 
-        if (walletAddress && !profile.success) {
+        if (walletAddress && !hasLocalAuth) {
           // Has wallet but not authenticated, redirect to signup
           router.push("/signup");
-        } else if (!walletAddress && profile.success) {
+        } else if (!walletAddress && hasLocalAuth) {
           // No wallet but authenticated, redirect to home
           router.push("/");
-        } else if (!walletAddress && !profile.success) {
+        } else if (!walletAddress && !hasLocalAuth) {
           // Neither wallet nor authenticated, redirect to home
           router.push("/");
         }
+
+        // const profile = await authService.getProfile();
+        // if (walletAddress && !profile.success) {
+        //   router.push("/signup");
+        // } else if (!walletAddress && profile.success) {
+        //   router.push("/");
+        // } else if (!walletAddress && !profile.success) {
+        //   router.push("/");
+        // }
       } catch {
         // On error, check wallet address only
         const walletAddress = localStorage.getItem("walletAddress");
@@ -409,18 +424,37 @@ export default function GamesPage() {
       setLoading(true);
       const existingStream = localStorage.getItem("streamUrl") || "";
       setStreamUrl(existingStream);
-      const profile = await authService.getProfile();
-      console.log("profile:", profile);
-      if (profile.success) {
-        setUserProfile(profile.data.data.profile);
+
+      // TEMP: profile API is broken — derive auth state from localStorage instead.
+      // Restore the getProfile() flow below once the Vorld profile route works.
+      const authToken = localStorage.getItem("authToken");
+      const userEmail = localStorage.getItem("userEmail");
+      const walletAddress = localStorage.getItem("walletAddress");
+      if (authToken) {
+        setUserProfile({ email: userEmail });
         setIsAuthenticated(true);
-        // Fetch user points after authentication
-        await fetchUserPoints();
       } else {
         setIsAuthenticated(false);
-
         setUserProfile(null);
       }
+      // Points are fetched by walletAddress (not by profile/authToken) — fetch
+      // independently so existing wallet users still see their balance.
+      if (walletAddress) {
+        await fetchUserPoints();
+      }
+
+      // const profile = await authService.getProfile();
+      // console.log("profile:", profile);
+      // if (profile.success) {
+      //   setUserProfile(profile.data.data.profile);
+      //   setIsAuthenticated(true);
+      //   // Fetch user points after authentication
+      //   await fetchUserPoints();
+      // } else {
+      //   setIsAuthenticated(false);
+      //
+      //   setUserProfile(null);
+      // }
     } catch (error) {
       console.error("Authentication check failed:", error);
       setIsAuthenticated(false);
