@@ -151,6 +151,18 @@ export default function GamesPage() {
       route: "https://axeascend.empireofbits.xyz/",
     },
     {
+      id: 76,
+      title: "Pacman",
+      category: "3D and Arcade",
+      image: "/images/pacman1.jpg",
+      pointsRequired: 15,
+      maxPlayers: 1,
+      prize: 0.3,
+      players: 1,
+      status: "live",
+      route: "https://pacman.empireofbits.xyz/",
+    },
+    {
       id: 78,
       title: "RC Crypto Car",
       category: "3D and VR",
