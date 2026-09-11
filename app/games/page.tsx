@@ -1106,10 +1106,10 @@ export default function GamesPage() {
                       POINTS: {game.pointsRequired}
                     </span>
 
-                    <span className="px-3 py-1.5 bg-black/80 font-bold flex items-center">
+                    {/* <span className="px-3 py-1.5 bg-black/80 font-bold flex items-center">
                       <Users className="h-4 w-4 mr-2" />
                       {game.players}/{game.maxPlayers}
-                    </span>
+                    </span> */}
                   </div>
 
                   {game.status === "coming-soon" && (
@@ -1251,9 +1251,9 @@ export default function GamesPage() {
               <div className="space-y-4 mb-6">
                 <div className="text-center">
                   <div className="inline-block bg-black border-2 border-white p-4 rounded-md relative">
-                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-black px-3 text-sm">
+                    {/* <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-black px-3 text-sm">
                       ENTRY FEE
-                    </div>
+                    </div> */}
                     <div className="flex items-center justify-center">
                       <Image
                         src="/images/cryptoCoin1.png"
@@ -1276,7 +1276,7 @@ export default function GamesPage() {
                     <div className="flex items-center justify-center mt-1">
                       <Users className="h-4 w-4 mr-1 text-blue-400" />
                       <span className="text-lg">
-                        {selectedGame.players}/{selectedGame.maxPlayers}
+                        0
                       </span>
                     </div>
                   </div>
