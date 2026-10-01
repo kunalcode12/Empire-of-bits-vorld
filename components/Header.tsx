@@ -497,6 +497,44 @@ export default function Header({
     },
   ];
 
+  const notificationsPanel = (
+    <>
+      <div className="p-3 border-b border-foreground/10 flex justify-between items-center">
+        <h3 className="text-sm font-bold">NOTIFICATIONS</h3>
+        <button
+          className="text-xs text-foreground/70 hover:text-foreground"
+          onClick={() => setNotifications([])}
+          title="Clear all notifications"
+          aria-label="Clear all notifications"
+        >
+          CLEAR ALL
+        </button>
+      </div>
+      <div className="max-h-80 overflow-y-auto">
+        {notifications.length > 0 ? (
+          notifications.map((notification) => (
+            <motion.div
+              key={notification.id}
+              className="p-4 border-b border-foreground/5 hover:bg-foreground/5 transition-colors"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h4 className="text-sm font-bold mb-1">{notification.title}</h4>
+              <p className="text-sm text-foreground/70">
+                {notification.message}
+              </p>
+            </motion.div>
+          ))
+        ) : (
+          <div className="p-4 text-center text-foreground/50">
+            <p className="text-sm">No new notifications</p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <>
       {/* Audio element for sound effects */}
@@ -532,7 +570,7 @@ export default function Header({
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
           scrolled
             ? "-translate-y-full opacity-0 pointer-events-none"
-            : "translate-y-0 opacity-100 py-4 bg-transparent"
+            : "translate-y-0 opacity-100 py-3 md:py-4 bg-transparent"
         }`}
       >
         {/* Animated accent line */}
@@ -548,7 +586,7 @@ export default function Header({
               {/* Logo section with animation */}
               <Link href="/" className="group relative z-10">
                 <motion.div
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-2 sm:gap-3"
                   onHoverStart={() => setIsHoveringLogo(true)}
                   onHoverEnd={() => setIsHoveringLogo(false)}
                 >
@@ -562,7 +600,7 @@ export default function Header({
                         repeat: isHoveringLogo ? Number.POSITIVE_INFINITY : 0,
                       }}
                     />
-                    <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-foreground/30 bg-background/80 backdrop-blur-sm">
+                    <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border-2 border-foreground/30 bg-background/80 backdrop-blur-sm">
                       <Image
                         src="/images/logoEmpire.jpg"
                         alt="Empire of Bits Logo"
@@ -575,7 +613,7 @@ export default function Header({
 
                   {/* Title with animated letters */}
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center">
+                    <h1 className="text-base min-[380px]:text-lg sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center whitespace-nowrap">
                       {["E", "M", "P", "I", "R", "E"].map((letter, i) => (
                         <motion.span
                           key={`title-1-${i}`}
@@ -603,7 +641,7 @@ export default function Header({
                         </motion.span>
                       ))}
                     </h1>
-                    <div className="flex items-center gap-1 text-xs text-foreground/70">
+                    <div className="flex items-center gap-1 text-[10px] sm:text-xs text-foreground/70">
                       <span className="inline-block">PLAY</span>
                       <span className="inline-block h-1 w-1 rounded-full bg-foreground/40"></span>
                       <span className="inline-block">EARN</span>
@@ -615,7 +653,7 @@ export default function Header({
               </Link>
 
               {/* Right side controls for desktop */}
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-3">
                 {/* Points Display with tooltip */}
                 {walletConnected && (
                   <div
@@ -736,41 +774,7 @@ export default function Header({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       >
-                        <div className="p-3 border-b border-foreground/10 flex justify-between items-center">
-                          <h3 className="text-sm font-bold">NOTIFICATIONS</h3>
-                          <button
-                            className="text-xs text-foreground/70 hover:text-foreground"
-                            onClick={() => setNotifications([])}
-                            title="Clear all notifications"
-                            aria-label="Clear all notifications"
-                          >
-                            CLEAR ALL
-                          </button>
-                        </div>
-                        <div className="max-h-80 overflow-y-auto">
-                          {notifications.length > 0 ? (
-                            notifications.map((notification) => (
-                              <motion.div
-                                key={notification.id}
-                                className="p-4 border-b border-foreground/5 hover:bg-foreground/5 transition-colors"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <h4 className="text-sm font-bold mb-1">
-                                  {notification.title}
-                                </h4>
-                                <p className="text-sm text-foreground/70">
-                                  {notification.message}
-                                </p>
-                              </motion.div>
-                            ))
-                          ) : (
-                            <div className="p-4 text-center text-foreground/50">
-                              <p className="text-sm">No new notifications</p>
-                            </div>
-                          )}
-                        </div>
+                        {notificationsPanel}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -817,14 +821,14 @@ export default function Header({
               </div>
 
               {/* Mobile controls */}
-              <div className="flex md:hidden items-center gap-2">
+              <div className="relative flex lg:hidden items-center gap-1.5 sm:gap-2">
                 {/* Theme Toggle */}
                 <ThemeToggle />
 
                 {/* Notifications for mobile */}
                 <div className="relative">
                   <motion.button
-                    className="relative p-2 rounded-full bg-background/50 backdrop-blur-md border border-foreground/10"
+                    className="relative flex h-10 w-10 items-center justify-center rounded-full bg-background/50 backdrop-blur-md border border-foreground/10"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onMouseEnter={() => playSound("hover")}
@@ -844,13 +848,14 @@ export default function Header({
 
                 {/* Mobile menu button */}
                 <motion.button
-                  className="p-2 rounded-full bg-background/50 backdrop-blur-md border border-foreground/10"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 backdrop-blur-md border border-foreground/10"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setMenuOpen(!menuOpen);
                     playSound("click");
                   }}
+                  aria-label={menuOpen ? "Close menu" : "Open menu"}
                 >
                   {menuOpen ? (
                     <X className="h-5 w-5" />
@@ -858,18 +863,32 @@ export default function Header({
                     <Menu className="h-5 w-5" />
                   )}
                 </motion.button>
+
+                {/* Notifications dropdown for mobile */}
+                <AnimatePresence>
+                  {showNotification && (
+                    <motion.div
+                      className="absolute right-0 top-full mt-3 w-[calc(100vw-2rem)] max-w-sm overflow-hidden bg-[hsl(var(--background)/0.97)] backdrop-blur-md border-2 border-[hsl(var(--foreground)/0.15)] rounded-lg shadow-xl z-50"
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    >
+                      {notificationsPanel}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
             {/* Navigation bar - desktop */}
-            <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+            <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2">
               <div className="relative bg-background/30 backdrop-blur-md rounded-full p-1 border border-foreground/10">
                 <ul className="flex space-x-1 relative">
                   {navItems.map((item) => (
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        className={`relative px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
+                        className={`relative px-2.5 xl:px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300 ${
                           activeNavItem === item.name
                             ? "text-white"
                             : "text-foreground/70 hover:text-foreground"
@@ -1031,7 +1050,7 @@ export default function Header({
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="fixed inset-0 z-50 md:hidden bg-background/95 backdrop-blur-md"
+            className="fixed inset-0 z-50 lg:hidden bg-[hsl(var(--background)/0.97)] backdrop-blur-md"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -1042,7 +1061,7 @@ export default function Header({
                 <Link href="/" className="flex items-center gap-2">
                   <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-foreground/30">
                     <Image
-                      src="/placeholder.svg?height=40&width=40"
+                      src="/images/logoEmpire.jpg"
                       alt="Empire of Bits Logo"
                       width={40}
                       height={40}
@@ -1079,7 +1098,7 @@ export default function Header({
                         className={`flex items-center gap-3 p-4 rounded-lg ${
                           activeNavItem === item.name
                             ? "bg-gradient-to-r from-purple-500 to-yellow-500 text-white"
-                            : "bg-foreground/5 text-foreground hover:bg-foreground/10"
+                            : "bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--foreground)/0.1)]"
                         }`}
                         onClick={(event) => {
                           handleNavItemClick(event, item.name, item.href, true);

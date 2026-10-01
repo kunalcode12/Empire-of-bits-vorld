@@ -1312,3 +1312,56 @@ h6 {
 .clip-text {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
+
+/* ---------- Landing page helpers ---------- */
+
+/* Fade the left/right edges of horizontally moving strips */
+.landing-fade-x {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+/* Retro perspective grid floor behind the hero */
+.landing-grid-floor {
+  background-image: linear-gradient(
+      hsl(var(--accent-purple) / 0.3) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, hsl(var(--accent-purple) / 0.3) 1px, transparent 1px);
+  background-size: 44px 44px;
+  transform: perspective(520px) rotateX(62deg);
+  transform-origin: center bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 15%, transparent 90%);
+  mask-image: linear-gradient(to top, #000 15%, transparent 90%);
+}
+
+/* Faint pixel grid for dark and coloured panels */
+.landing-pixel-grid {
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

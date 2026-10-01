@@ -81,7 +81,7 @@ export function WalletSelectModal({ isOpen, onClose }: WalletSelectModalProps) {
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-gray-900 backdrop-blur-md border-4 border-purple-500/30 dark:border-purple-400/30 rounded-2xl p-8 max-w-lg w-full relative shadow-2xl"
+            className="bg-white dark:bg-gray-900 backdrop-blur-md border-4 border-purple-500/30 dark:border-purple-400/30 rounded-2xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto sm:max-h-none sm:overflow-visible relative shadow-2xl"
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -93,7 +93,7 @@ export function WalletSelectModal({ isOpen, onClose }: WalletSelectModalProps) {
 
             {/* Close button */}
             <button
-              className="absolute top-6 right-6 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+              className="absolute top-3 right-3 sm:top-6 sm:right-6 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
               onClick={onClose}
               title="Close"
             >
@@ -101,8 +101,8 @@ export function WalletSelectModal({ isOpen, onClose }: WalletSelectModalProps) {
             </button>
 
             {/* Header */}
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-500 via-yellow-500 to-purple-500 bg-clip-text text-transparent">
+            <div className="text-center mb-6 sm:mb-8 px-8 sm:px-0">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-purple-500 via-yellow-500 to-purple-500 bg-clip-text text-transparent">
                 Connect Wallet
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import {
   ChevronRight,
   Trophy,
@@ -19,6 +19,8 @@ import {
   BarChart3,
   Award,
   Sparkles,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { GameCard } from "@/components/game-card";
 import { TournamentCard } from "@/components/tournament-card";
@@ -34,6 +36,17 @@ import RetroGameCompletionPopup from "@/components/GameComplitionPopup";
 import { VorldAuthService } from "../lib/authservice";
 import { WalletSelectModal } from "@/components/wallet-select-modal";
 import { useSolanaWallet } from "@/components/solana-wallet-provider";
+
+// Deterministic positions so the server and client render identical markup
+const ctaParticles = Array.from({ length: 30 }, (_, i) => ({
+  top: (i * 37 + 11) % 100,
+  left: (i * 53 + 23) % 100,
+  duration: 3 + ((i * 7) % 8),
+  delay: ((i * 13) % 50) / 10,
+}));
+
+const outlineButtonClass =
+  "w-full sm:w-auto inline-flex items-center justify-center gap-2 border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--background))] px-6 py-4 text-xs sm:text-sm shadow-[4px_4px_0_0_hsl(var(--foreground))] hover:border-[hsl(var(--accent-purple))] hover:text-[hsl(var(--accent-purple))] transition-colors";
 
 export default function Home() {
   const [isHovering, setIsHovering] = useState("");
@@ -208,6 +221,55 @@ export default function Home() {
     },
   ];
 
+  const tickerItems = [
+    "PLAY",
+    "BET",
+    "WIN",
+    ...featuredGames.map((game) => game.title.toUpperCase()),
+  ];
+
+  const sectionTabs = [
+    {
+      key: "featured",
+      label: "FEATURED GAMES",
+      shortLabel: "FEATURED",
+      icon: Zap,
+    },
+    {
+      key: "tournaments",
+      label: "TOURNAMENTS",
+      shortLabel: "TOURNAMENTS",
+      icon: Trophy,
+    },
+    {
+      key: "leaderboard",
+      label: "LEADERBOARD",
+      shortLabel: "LEADERBOARD",
+      icon: BarChart3,
+    },
+  ];
+
+  const howItWorksSteps = [
+    {
+      title: "CONNECT WALLET",
+      icon: Wallet,
+      description:
+        "Connect your Solana wallet to unlock a world of retro gaming and digital rewards. Your wallet is the key to depositing funds, tracking your assets, and collecting your hard-earned winnings.",
+    },
+    {
+      title: "Choose Your Challenge",
+      icon: Gamepad2,
+      description:
+        "Select from a lineup of classic arcade games. Place your bets, compete against other players, and feel the thrill of retro gaming.",
+    },
+    {
+      title: "WIN POINTS",
+      icon: Coins,
+      description:
+        "Win matches, top the leaderboards, and watch yourself grow with every victory.",
+    },
+  ];
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPosition({ x: e.clientX, y: e.clientY });
@@ -353,7 +415,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-mono overflow-hidden relative">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] font-mono overflow-hidden relative">
       <AnimatePresence>
         {showRetroWelcome && (
           <RetroWelcomePopup onClose={() => setShowRetroWelcome(false)} />
@@ -532,394 +594,527 @@ export default function Home() {
         }}
       />
 
-      <main className="flex-1 relative z-10 pt-28">
-        {/* Hero Section */}
-        <section className="py-16 md:py-24 px-4 text-center relative overflow-hidden">
-          {/* Animated background elements */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 w-8 h-8 bg-[hsl(var(--accent-purple))] rotate-45 animate-float"></div>
-            <div className="absolute top-1/3 right-1/4 w-6 h-6 bg-[hsl(var(--accent-yellow))] rotate-45 animate-float-delay"></div>
-            <div className="absolute bottom-1/4 left-1/3 w-7 h-7 bg-[hsl(var(--accent-green))] rotate-45 animate-float-slow"></div>
-            <div className="absolute bottom-1/3 right-1/3 w-5 h-5 bg-red-500 rotate-45 animate-float-slower"></div>
-          </div>
-
-          <div className="max-w-7xl mx-auto relative">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-4"
+      <MotionConfig reducedMotion="user">
+        <main className="landing-page flex-1 relative z-10 pt-20 md:pt-28">
+          {/* Hero Section */}
+          <section className="relative overflow-hidden px-4 pt-8 pb-12 sm:pt-12 md:pt-16 md:pb-20 text-center">
+            {/* Animated background elements */}
+            <div
+              className="absolute inset-0 overflow-hidden pointer-events-none"
+              aria-hidden="true"
             >
-              <span className="inline-block px-4 py-2 bg-[hsl(var(--accent-purple))] text-base font-bold border-3 border-[hsl(var(--accent-purple)/0.7)] mb-3 text-white">
-                Solana ARCADE GAMING
-              </span>
-            </motion.div>
+              <div className="absolute -top-24 -left-24 h-72 w-72 md:h-[28rem] md:w-[28rem] rounded-full bg-[hsl(var(--accent-purple)/0.2)] blur-3xl"></div>
+              <div className="absolute top-16 -right-28 h-72 w-72 md:h-[26rem] md:w-[26rem] rounded-full bg-[hsl(var(--accent-yellow)/0.25)] blur-3xl"></div>
+              <div className="absolute inset-x-0 bottom-0 h-40 md:h-64 landing-grid-floor"></div>
+              <div className="absolute top-[12%] left-[5%] md:left-[16%] w-4 h-4 md:w-8 md:h-8 bg-[hsl(var(--accent-purple))] rotate-45 animate-float"></div>
+              <div className="absolute top-[30%] right-[6%] md:top-[12%] md:right-[16%] w-3.5 h-3.5 md:w-6 md:h-6 bg-[hsl(var(--accent-yellow))] rotate-45 animate-float-delay"></div>
+              <div className="absolute top-[44%] left-[6%] md:top-auto md:bottom-[42%] md:left-[7%] w-3 h-3 md:w-7 md:h-7 bg-[hsl(var(--accent-green))] rotate-45 animate-float-slow"></div>
+              <div className="absolute top-[54%] right-[7%] md:top-auto md:bottom-[36%] md:right-[7%] w-3 h-3 md:w-5 md:h-5 bg-red-500 rotate-45 animate-float-slower"></div>
+            </div>
 
-            <motion.h2
-              className="text-5xl md:text-7xl font-bold mb-8 glitch-text-lg"
-              data-text="PLAY. BET. WIN."
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              PLAY. BET. WIN.
-            </motion.h2>
-
-            <motion.p
-              className="text-xl md:text-2xl mb-12 text-foreground/80 max-w-3xl mx-auto"
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              Relive the classics, earn the future.
-            </motion.p>
-
-            <div className="flex justify-center">
+            <div className="max-w-7xl mx-auto relative">
               <motion.div
-                className="relative inline-block"
-                whileHover={{ scale: 1.05 }}
-                onMouseEnter={() => {
-                  setIsHovering("games");
-                  playSound("hover");
-                }}
-                onMouseLeave={() => setIsHovering("")}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                transition={{ duration: 0.5 }}
+                className="mb-7 md:mb-9"
               >
-                <ParticleButton
-                  className="bg-[hsl(var(--accent-purple))] text-white px-12 py-5 text-2xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group"
-                  onClick={() => {
-                    playSound("click");
-                    handlePlayGamesClick();
-                  }}
-                >
-                  <span className="relative z-10 flex items-center">
-                    PLAY GAMES
-                    <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                <span className="inline-flex items-center gap-2.5 px-3 py-2 sm:px-4 bg-[hsl(var(--accent-purple))] text-white border-3 border-[hsl(var(--foreground))] shadow-[3px_3px_0_0_hsl(var(--foreground))] font-pixel text-[9px] sm:text-[11px] uppercase">
+                  <span className="relative flex h-2 w-2" aria-hidden="true">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--accent-yellow))] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--accent-yellow))]"></span>
                   </span>
-                </ParticleButton>
-                {/* Pixel effect on hover */}
-                {isHovering === "games" && (
-                  <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-yellow))]"></div>
-                )}
+                  Solana ARCADE GAMING
+                </span>
               </motion.div>
-            </div>
 
-            {!walletConnected && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="mt-10"
+              <motion.h2
+                className="font-pixel text-[clamp(2.3rem,12.5vw,3.75rem)] md:text-[2.75rem] lg:text-6xl xl:text-7xl leading-[1.3] md:leading-tight mb-6 md:mb-8"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
               >
-                <button
-                  className="text-base text-[hsl(var(--accent-yellow))] flex items-center mx-auto hover:underline"
-                  onClick={() => {
-                    setShowWalletModal(true);
-                    playSound("click");
-                  }}
-                >
-                  <Wallet className="h-5 w-5 mr-2" />
-                  Connect wallet to start earning
-                </button>
-              </motion.div>
-            )}
-
-            <motion.div
-              className="mt-10 md:mt-12 max-w-4xl mx-auto px-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.7 }}
-            >
-              <div className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-gradient-to-r from-[hsl(var(--accent-purple))/10] via-background/80 to-[hsl(var(--accent-yellow))/10] px-5 py-5 md:px-8 md:py-6 shadow-[0_10px_35px_rgba(124,58,237,0.10)] backdrop-blur-md">
-                <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-
-                <p className="text-center text-lg md:text-2xl font-semibold tracking-tight leading-relaxed text-foreground/90">
-                  Fast matches. Fair competition. Rewards worth your time.
-                </p>
-
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5 text-sm md:text-base">
-                  <span className="rounded-full border border-[hsl(var(--accent-purple))/30] bg-[hsl(var(--accent-purple))/8] px-3.5 py-1.5 text-foreground/90">
-                    No long waiting lobbies
+                <span className="block md:inline">
+                  <span
+                    className="font-pixel glitch-text-lg isolate"
+                    data-text="PLAY."
+                  >
+                    PLAY.
                   </span>
-                  <span className="rounded-full border border-[hsl(var(--accent-yellow))/35] bg-[hsl(var(--accent-yellow))/8] px-3.5 py-1.5 text-foreground/90">
-                    Skill-first gameplay
+                </span>{" "}
+                <span className="block md:inline">
+                  <span
+                    className="font-pixel glitch-text-lg isolate text-[hsl(var(--accent-purple))]"
+                    data-text="BET."
+                  >
+                    BET.
                   </span>
-                  <span className="rounded-full border border-[hsl(var(--accent-green))/35] bg-[hsl(var(--accent-green))/10] px-3.5 py-1.5 text-foreground/90">
-                    Real reward progression
+                </span>{" "}
+                <span className="block md:inline">
+                  <span className="inline-block bg-[hsl(var(--accent-yellow))] px-2 md:px-3 text-black shadow-[4px_4px_0_0_hsl(var(--foreground))]">
+                    <span
+                      className="font-pixel glitch-text-lg isolate"
+                      data-text="WIN."
+                    >
+                      WIN.
+                    </span>
                   </span>
-                </div>
+                </span>
+              </motion.h2>
 
-                <p className="mt-4 text-center text-sm md:text-base text-foreground/70 italic">
-                  Loved by 300+ gamers
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Game Showcase Section */}
-        <section className="py-16 px-4 relative overflow-hidden">
-          {/* Section background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-[hsl(var(--accent-purple))/10] to-background/0 pointer-events-none"></div>
-
-          <div className="max-w-7xl mx-auto relative">
-            {/* Section tabs */}
-            <div className="flex overflow-x-auto scrollbar-hide mb-10 pb-2">
-              <AnimatedButton
-                className={`px-8 py-4 mr-3 whitespace-nowrap text-lg ${
-                  activeSection === "featured"
-                    ? "bg-foreground text-background"
-                    : "bg-transparent text-foreground border-3 border-foreground"
-                }`}
-                onClick={() => {
-                  setActiveSection("featured");
-                  playSound("click");
-                }}
+              <motion.p
+                className="text-base sm:text-xl md:text-2xl mb-8 md:mb-10 text-[hsl(var(--foreground)/0.75)] max-w-3xl mx-auto"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <Zap className="w-5 h-5 mr-2 inline-block" />
-                FEATURED GAMES
-              </AnimatedButton>
-              <AnimatedButton
-                className={`px-8 py-4 mr-3 whitespace-nowrap text-lg ${
-                  activeSection === "tournaments"
-                    ? "bg-foreground text-background"
-                    : "bg-transparent text-foreground border-3 border-foreground"
-                }`}
-                onClick={() => {
-                  setActiveSection("tournaments");
-                  playSound("click");
-                }}
-              >
-                <Trophy className="w-5 h-5 mr-2 inline-block" />
-                TOURNAMENTS
-              </AnimatedButton>
-              <AnimatedButton
-                className={`px-8 py-4 mr-3 whitespace-nowrap text-lg ${
-                  activeSection === "leaderboard"
-                    ? "bg-foreground text-background"
-                    : "bg-transparent text-foreground border-3 border-foreground"
-                }`}
-                onClick={() => {
-                  setActiveSection("leaderboard");
-                  playSound("click");
-                }}
-              >
-                <BarChart3 className="w-5 h-5 mr-2 inline-block" />
-                LEADERBOARD
-              </AnimatedButton>
-            </div>
+                Relive the classics, earn the future.
+              </motion.p>
 
-            {/* Featured Games */}
-            <AnimatePresence mode="wait">
-              {activeSection === "featured" && (
+              <div className="mx-auto flex w-full max-w-sm flex-col items-stretch gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-5">
                 <motion.div
-                  key="featured"
+                  className="relative"
+                  whileHover={{ scale: 1.05 }}
+                  onMouseEnter={() => {
+                    setIsHovering("games");
+                    playSound("hover");
+                  }}
+                  onMouseLeave={() => setIsHovering("")}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {featuredGames.map((game) => (
-                      <GameCard
-                        key={game.id}
-                        game={game}
-                        onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
-                        onJoinGame={() => {
-                          playSound("click");
-                          handlePlayGamesClick();
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <ParticleButton
+                    className="w-full bg-[hsl(var(--accent-purple))] text-white px-8 py-4 sm:px-10 sm:py-5 border-3 border-[hsl(var(--foreground))] shadow-[5px_5px_0_0_hsl(var(--foreground))] relative overflow-hidden group"
+                    onClick={() => {
+                      playSound("click");
+                      handlePlayGamesClick();
+                    }}
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-3 font-pixel text-sm sm:text-base">
+                      PLAY GAMES
+                      <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform" />
+                    </span>
+                  </ParticleButton>
+                  {/* Pixel effect on hover */}
+                  {isHovering === "games" && (
+                    <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-[hsl(var(--accent-yellow))]"></div>
+                  )}
+                </motion.div>
 
-                  <div className="text-center mt-12">
-                    <Link
-                      href="/games"
-                      onClick={(e) => {
-                        if (!ensureWalletConnected()) {
-                          e.preventDefault();
-                          return;
-                        }
+                {!walletConnected && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    <button
+                      className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 sm:py-5 border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--background)/0.85)] backdrop-blur-sm text-[hsl(var(--foreground))] hover:bg-[hsl(var(--accent-yellow))] hover:text-black transition-colors"
+                      onClick={() => {
+                        setShowWalletModal(true);
                         playSound("click");
                       }}
                     >
+                      <Wallet className="h-5 w-5 shrink-0" />
+                      <span className="text-sm sm:text-base font-semibold">
+                        Connect wallet to start earning
+                      </span>
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+
+              <motion.div
+                className="mt-10 md:mt-14 max-w-4xl mx-auto"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.7 }}
+              >
+                <div className="relative overflow-hidden rounded-2xl border-2 border-[hsl(var(--foreground)/0.12)] bg-gradient-to-br from-[hsl(var(--accent-purple)/0.1)] via-[hsl(var(--background)/0.85)] to-[hsl(var(--accent-yellow)/0.14)] px-4 py-5 sm:px-6 md:px-8 md:py-7 shadow-[0_10px_35px_rgba(124,58,237,0.12)] backdrop-blur-md">
+                  <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+
+                  <p className="text-center text-lg sm:text-xl md:text-2xl font-semibold tracking-tight leading-snug text-[hsl(var(--foreground)/0.9)]">
+                    Fast matches. Fair competition. Rewards worth your time.
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 text-[13px] sm:text-sm md:text-base">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--accent-purple)/0.35)] bg-[hsl(var(--accent-purple)/0.08)] px-3 py-1.5 text-[hsl(var(--foreground)/0.9)]">
+                      <Zap className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--accent-purple))]" />
+                      No long waiting lobbies
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--accent-yellow)/0.6)] bg-[hsl(var(--accent-yellow)/0.12)] px-3 py-1.5 text-[hsl(var(--foreground)/0.9)]">
+                      <Target className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                      Skill-first gameplay
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(var(--accent-green)/0.4)] bg-[hsl(var(--accent-green)/0.1)] px-3 py-1.5 text-[hsl(var(--foreground)/0.9)]">
+                      <TrendingUp className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--accent-green))]" />
+                      Real reward progression
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-center gap-2.5">
+                    <div className="flex -space-x-1" aria-hidden="true">
+                      <span className="h-4 w-4 border-2 border-[hsl(var(--background))] bg-[hsl(var(--accent-purple))]"></span>
+                      <span className="h-4 w-4 border-2 border-[hsl(var(--background))] bg-[hsl(var(--accent-yellow))]"></span>
+                      <span className="h-4 w-4 border-2 border-[hsl(var(--background))] bg-[hsl(var(--accent-green))]"></span>
+                      <span className="h-4 w-4 border-2 border-[hsl(var(--background))] bg-red-500"></span>
+                    </div>
+                    <p className="text-sm md:text-base text-[hsl(var(--foreground)/0.7)] italic">
+                      Loved by 300+ gamers
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* Arcade ticker */}
+          <div
+            className="relative overflow-hidden py-5 md:py-8"
+            aria-hidden="true"
+          >
+            <div className="-mx-6 -rotate-2 md:-rotate-1 bg-[hsl(var(--foreground))] py-3 md:py-4 shadow-[0_5px_0_0_hsl(var(--accent-purple))]">
+              <motion.div
+                className="flex w-max"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{
+                  duration: 28,
+                  ease: "linear",
+                  repeat: Number.POSITIVE_INFINITY,
+                }}
+              >
+                {[...tickerItems, ...tickerItems].map((item, index) => (
+                  <span
+                    key={`ticker-${index}`}
+                    className="flex shrink-0 items-center gap-5 md:gap-7 pr-5 md:pr-7 whitespace-nowrap text-[hsl(var(--background))]"
+                  >
+                    <span className="font-pixel text-[11px] md:text-sm">
+                      {item}
+                    </span>
+                    <span className="inline-block h-2 w-2 md:h-2.5 md:w-2.5 rotate-45 bg-[hsl(var(--accent-yellow))]"></span>
+                  </span>
+                ))}
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Game Showcase Section */}
+          <section className="py-10 md:py-20 px-4 relative overflow-hidden">
+            {/* Section background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(var(--accent-purple)/0.07)] to-transparent pointer-events-none"></div>
+
+            <div className="max-w-7xl mx-auto relative">
+              {/* Section tabs */}
+              <div className="mb-8 md:mb-12 flex justify-center">
+                <div className="grid w-full max-w-md grid-cols-3 gap-1.5 border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--background))] p-1.5 shadow-[4px_4px_0_0_hsl(var(--foreground))] md:flex md:w-auto md:max-w-none md:gap-2 md:p-2">
+                  {sectionTabs.map((tab) => {
+                    const TabIcon = tab.icon;
+                    const isActive = activeSection === tab.key;
+
+                    return (
                       <AnimatedButton
-                        className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
-                        onHover={() => playSound("hover")}
+                        key={tab.key}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-2.5 px-1 py-2.5 md:px-6 md:py-4 transition-colors ${
+                          isActive
+                            ? "bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"
+                            : "bg-transparent text-[hsl(var(--foreground)/0.75)] hover:bg-[hsl(var(--foreground)/0.06)]"
+                        }`}
+                        onClick={() => {
+                          setActiveSection(tab.key);
+                          playSound("click");
+                        }}
                       >
-                        VIEW ALL GAMES
-                        <ArrowRight className="ml-0.5 h-5 w-5 inline-block align-middle" />
+                        <TabIcon
+                          className={`h-4 w-4 md:h-5 md:w-5 shrink-0 ${
+                            isActive ? "text-[hsl(var(--accent-yellow))]" : ""
+                          }`}
+                        />
+                        <span className="md:hidden text-[10.5px] font-bold uppercase tracking-wider leading-none">
+                          {tab.shortLabel}
+                        </span>
+                        <span className="hidden md:inline font-pixel text-[11px] lg:text-xs whitespace-nowrap">
+                          {tab.label}
+                        </span>
                       </AnimatedButton>
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
+                    );
+                  })}
+                </div>
+              </div>
 
-              {/* Tournaments */}
-              {activeSection === "tournaments" && (
-                <motion.div
-                  key="tournaments"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {tournaments.map((tournament) => (
-                      <TournamentCard
-                        key={tournament.id}
-                        tournament={tournament}
-                        onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="text-center mt-12">
-                    <Link href="/coming-soon">
-                      <AnimatedButton
-                        className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
-                        onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
-                      >
-                        VIEW ALL TOURNAMENTS
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </AnimatedButton>
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Leaderboard */}
-              {activeSection === "leaderboard" && (
-                <motion.div
-                  key="leaderboard"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="bg-background/50 border-3 border-foreground p-6 retro-shadow">
-                    <div className="grid grid-cols-5 gap-6 font-bold mb-6 text-[hsl(var(--accent-yellow))] border-b-3 border-foreground pb-4 text-lg">
-                      <div>RANK</div>
-                      <div>PLAYER</div>
-                      <div>GAME</div>
-                      <div>SCORE</div>
-                      <div>EARNINGS</div>
+              {/* Featured Games */}
+              <AnimatePresence mode="wait">
+                {activeSection === "featured" && (
+                  <motion.div
+                    key="featured"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 md:gap-6 overflow-x-auto px-4 pt-2 pb-6 scrollbar-hide lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0 lg:pb-2 lg:snap-none">
+                      {featuredGames.map((game) => (
+                        <div
+                          key={game.id}
+                          className="w-[80%] max-w-[320px] shrink-0 snap-start sm:w-[46%] sm:max-w-[340px] lg:w-auto lg:max-w-none"
+                        >
+                          <GameCard
+                            game={game}
+                            onHover={() => playSound("hover")}
+                            onClick={() => playSound("click")}
+                            onJoinGame={() => {
+                              playSound("click");
+                              handlePlayGamesClick();
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
 
-                    {leaderboardData.map((entry, index) => (
-                      <motion.div
-                        key={index}
-                        className="grid grid-cols-5 gap-6 py-4 border-b-2 border-foreground/20 text-lg"
-                        whileHover={{
-                          backgroundColor: "hsl(var(--foreground) / 0.1)",
+                    <p
+                      className="lg:hidden flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[hsl(var(--foreground)/0.5)]"
+                      aria-hidden="true"
+                    >
+                      Swipe
+                      <ArrowRight className="h-3.5 w-3.5 animate-pulse" />
+                    </p>
+
+                    <div className="text-center mt-6 md:mt-12">
+                      <Link
+                        href="/games"
+                        className="block sm:inline-block"
+                        onClick={(e) => {
+                          if (!ensureWalletConnected()) {
+                            e.preventDefault();
+                            return;
+                          }
+                          playSound("click");
                         }}
-                        onMouseEnter={() => playSound("hover")}
                       >
-                        <div className="font-bold flex items-center">
-                          {entry.rank === 1 && (
-                            <Award className="h-5 w-5 mr-2 text-[hsl(var(--accent-yellow))]" />
-                          )}
-                          {entry.rank === 2 && (
-                            <Award className="h-5 w-5 mr-2 text-gray-400" />
-                          )}
-                          {entry.rank === 3 && (
-                            <Award className="h-5 w-5 mr-2 text-amber-700" />
-                          )}
-                          {entry.rank}
-                        </div>
-                        <div className="text-foreground">{entry.player}</div>
-                        <div className="text-foreground/70">{entry.game}</div>
-                        <div className="text-foreground">
-                          {entry.score.toLocaleString()}
-                        </div>
-                        <div className="text-[hsl(var(--accent-green))]">
-                          {entry.earnings} SOL
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                        <AnimatedButton
+                          className={outlineButtonClass}
+                          onHover={() => playSound("hover")}
+                        >
+                          VIEW ALL GAMES
+                          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                        </AnimatedButton>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
 
-                  <div className="text-center mt-12">
-                    <Link href="/coming-soon">
-                      <AnimatedButton
-                        className="text-lg border-3 border-foreground px-8 py-4 hover:border-[hsl(var(--accent-yellow))] hover:text-[hsl(var(--accent-yellow))]"
-                        onHover={() => playSound("hover")}
-                        onClick={() => playSound("click")}
+                {/* Tournaments */}
+                {activeSection === "tournaments" && (
+                  <motion.div
+                    key="tournaments"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-6 scrollbar-hide md:mx-0 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:px-0 md:pb-2 md:snap-none">
+                      {tournaments.map((tournament) => (
+                        <div
+                          key={tournament.id}
+                          className="w-[86%] max-w-[380px] shrink-0 snap-start md:w-auto md:max-w-none"
+                        >
+                          <TournamentCard
+                            tournament={tournament}
+                            onHover={() => playSound("hover")}
+                            onClick={() => playSound("click")}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <p
+                      className="md:hidden flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[hsl(var(--foreground)/0.5)]"
+                      aria-hidden="true"
+                    >
+                      Swipe
+                      <ArrowRight className="h-3.5 w-3.5 animate-pulse" />
+                    </p>
+
+                    <div className="text-center mt-6 md:mt-12">
+                      <Link
+                        href="/coming-soon"
+                        className="block sm:inline-block"
                       >
-                        VIEW FULL LEADERBOARD
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </AnimatedButton>
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
+                        <AnimatedButton
+                          className={outlineButtonClass}
+                          onHover={() => playSound("hover")}
+                          onClick={() => playSound("click")}
+                        >
+                          VIEW ALL TOURNAMENTS
+                          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                        </AnimatedButton>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
 
-        <section className="py-16 md:py-24 px-4 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto relative">
+                {/* Leaderboard */}
+                {activeSection === "leaderboard" && (
+                  <motion.div
+                    key="leaderboard"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="overflow-hidden bg-[hsl(var(--background))] border-3 border-[hsl(var(--foreground))] retro-shadow">
+                      <div className="flex items-center justify-between bg-[hsl(var(--foreground))] px-4 py-3 text-[9px] text-[hsl(var(--accent-yellow))] md:hidden">
+                        <span className="font-pixel">RANK / PLAYER</span>
+                        <span className="font-pixel">SCORE</span>
+                      </div>
+                      <div className="hidden md:grid grid-cols-5 gap-6 bg-[hsl(var(--foreground))] px-6 py-4 text-xs text-[hsl(var(--accent-yellow))]">
+                        <div className="font-pixel">RANK</div>
+                        <div className="font-pixel">PLAYER</div>
+                        <div className="font-pixel">GAME</div>
+                        <div className="font-pixel">SCORE</div>
+                        <div className="font-pixel">EARNINGS</div>
+                      </div>
+
+                      {leaderboardData.map((entry, index) => (
+                        <motion.div
+                          key={index}
+                          className="flex items-center gap-3 px-4 py-3.5 md:grid md:grid-cols-5 md:gap-6 md:px-6 md:py-4 border-b-2 border-[hsl(var(--foreground)/0.1)] last:border-b-0 md:text-lg"
+                          whileHover={{
+                            backgroundColor: "hsl(var(--foreground) / 0.1)",
+                          }}
+                          onMouseEnter={() => playSound("hover")}
+                        >
+                          <div className="font-bold flex shrink-0 items-center gap-2">
+                            <span
+                              className={`flex h-9 w-9 items-center justify-center border-2 font-pixel text-xs ${
+                                entry.rank === 1
+                                  ? "bg-[hsl(var(--accent-yellow))] border-black text-black"
+                                  : entry.rank === 2
+                                    ? "bg-gray-300 border-black text-black"
+                                    : entry.rank === 3
+                                      ? "bg-amber-600 border-black text-white"
+                                      : "border-[hsl(var(--foreground)/0.25)]"
+                              }`}
+                            >
+                              {entry.rank}
+                            </span>
+                            {entry.rank === 1 && (
+                              <Award className="h-5 w-5 text-[hsl(var(--accent-yellow))]" />
+                            )}
+                            {entry.rank === 2 && (
+                              <Award className="h-5 w-5 text-gray-400" />
+                            )}
+                            {entry.rank === 3 && (
+                              <Award className="h-5 w-5 text-amber-700" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold text-[hsl(var(--foreground))]">
+                              {entry.player}
+                            </div>
+                            <div className="truncate text-xs text-[hsl(var(--foreground)/0.6)] md:hidden">
+                              {entry.game}
+                            </div>
+                          </div>
+                          <div className="hidden md:block text-[hsl(var(--foreground)/0.7)]">
+                            {entry.game}
+                          </div>
+                          <div className="shrink-0 text-right md:text-left">
+                            <div className="font-bold tabular-nums text-[hsl(var(--foreground))]">
+                              {entry.score.toLocaleString()}
+                            </div>
+                            <div className="text-xs font-semibold text-[hsl(var(--accent-green))] md:hidden">
+                              {entry.earnings} SOL
+                            </div>
+                          </div>
+                          <div className="hidden md:block font-semibold text-[hsl(var(--accent-green))]">
+                            {entry.earnings} SOL
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <div className="text-center mt-8 md:mt-12">
+                      <Link
+                        href="/coming-soon"
+                        className="block sm:inline-block"
+                      >
+                        <AnimatedButton
+                          className={outlineButtonClass}
+                          onHover={() => playSound("hover")}
+                          onClick={() => playSound("click")}
+                        >
+                          VIEW FULL LEADERBOARD
+                          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                        </AnimatedButton>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </section>
+
+          <section className="relative overflow-hidden py-10 md:py-20">
+            {/* Achievement banner */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
               viewport={{ once: true }}
-              className="mb-10 md:mb-12 relative left-1/2 right-1/2 -mx-[50vw] w-screen"
+              className="relative overflow-hidden border-y-4 border-[hsl(var(--foreground))] bg-zinc-950 text-white"
             >
-              <div className="relative h-[420px] md:h-[620px] w-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
-                <Image
-                  src="/images/image.png"
-                  alt="Winner at the Underdog Hackathon by Indies on Solana"
-                  fill
-                  className="object-cover scale-105 blur-sm opacity-45"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/30" />
-                <div className="absolute inset-0 p-4 md:p-8">
-                  <div className="relative h-full w-full">
+              <Image
+                src="/images/hackathon-winner.webp"
+                alt=""
+                aria-hidden="true"
+                fill
+                className="object-cover scale-110 blur-2xl opacity-40"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-[hsl(var(--accent-purple)/0.45)]" />
+              <div className="absolute inset-0 landing-pixel-grid" />
+
+              <div className="relative max-w-7xl mx-auto grid items-center gap-7 px-4 py-10 sm:py-12 md:py-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
+                <div className="relative mx-auto w-full max-w-2xl lg:max-w-none">
+                  <div className="relative aspect-video overflow-hidden border-3 border-white shadow-[6px_6px_0_0_hsl(var(--accent-purple))] md:shadow-[10px_10px_0_0_hsl(var(--accent-purple))]">
                     <Image
-                      src="/images/image.png"
+                      src="/images/hackathon-winner.webp"
                       alt="Winner at the Underdog Hackathon by Indies on Solana"
                       fill
-                      className="object-contain"
+                      className="object-cover"
                     />
                   </div>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 text-center md:text-left bg-gradient-to-t from-black/75 to-transparent">
-                  <p className="text-xs md:text-sm uppercase tracking-[0.2em] text-white/75 mb-2">
+
+                <div className="text-center lg:order-first lg:text-left">
+                  <span className="inline-flex items-center gap-2 border-2 border-[hsl(var(--accent-yellow))] bg-black/40 px-3 py-1.5 font-pixel text-[9px] sm:text-[10px] uppercase text-[hsl(var(--accent-yellow))]">
+                    <Trophy className="h-3.5 w-3.5" />
                     Achievement
-                  </p>
-                  <h3 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+                  </span>
+                  <h3 className="mt-4 md:mt-5 font-pixel text-lg sm:text-2xl xl:text-[2rem] leading-snug xl:leading-tight text-white">
                     Winner at the Underdog Hackathon
                   </h3>
-                  <p className="mt-2 text-lg md:text-2xl text-white/90">
+                  <p className="mt-3 md:mt-4 text-lg sm:text-xl md:text-2xl text-white/85">
                     by Indies on Solana
                   </p>
                 </div>
               </div>
             </motion.div>
 
+            {/* Community accreditations */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
-              className="mb-10 md:mb-12 space-y-5 md:space-y-6 relative left-1/2 right-1/2 -mx-[50vw] w-screen px-3 md:px-6"
+              className="pt-10 md:pt-16 space-y-4 md:space-y-6"
             >
-              <p className="text-center text-sm md:text-base uppercase tracking-[0.18em] text-foreground/60">
+              <p className="px-4 text-center font-pixel text-[10px] sm:text-xs uppercase text-[hsl(var(--foreground)/0.6)]">
                 Community Accreditations
               </p>
 
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-purple))/6] via-transparent to-[hsl(var(--accent-yellow))/6] py-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+              <div className="landing-fade-x relative overflow-hidden py-1">
                 <motion.div
-                  className="flex w-max gap-6"
+                  className="flex w-max"
                   animate={{ x: ["0%", "-50%"] }}
                   transition={{
                     duration: 34,
@@ -931,26 +1126,27 @@ export default function Home() {
                     (image, index) => (
                       <div
                         key={`accreditation-top-${index}`}
-                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                        className="shrink-0 pr-3 md:pr-5"
                       >
-                        <Image
-                          src={image}
-                          alt={`Accreditation screenshot ${index + 1}`}
-                          fill
-                          className="object-contain p-2"
-                        />
+                        <div className="overflow-hidden rounded-xl md:rounded-2xl border-2 border-[hsl(var(--foreground)/0.12)] bg-black shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+                          <Image
+                            src={image}
+                            alt={`Accreditation screenshot ${index + 1}`}
+                            width={600}
+                            height={150}
+                            className="h-20 sm:h-24 md:h-32 w-auto max-w-none"
+                          />
+                        </div>
                       </div>
                     ),
                   )}
                 </motion.div>
               </div>
 
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[hsl(var(--accent-yellow))/6] via-transparent to-[hsl(var(--accent-purple))/6] py-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 md:w-36 bg-gradient-to-r from-background via-background/80 to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 md:w-36 bg-gradient-to-l from-background via-background/80 to-transparent" />
+              <div className="landing-fade-x relative overflow-hidden py-1">
                 <motion.div
-                  className="flex w-max gap-6"
-                  animate={{ x: ["0%", "-50%"] }}
+                  className="flex w-max"
+                  animate={{ x: ["-50%", "0%"] }}
                   transition={{
                     duration: 40,
                     ease: "linear",
@@ -961,422 +1157,471 @@ export default function Home() {
                     (image, index) => (
                       <div
                         key={`accreditation-bottom-${index}`}
-                        className="relative h-44 w-[340px] md:h-56 md:w-[460px] flex-shrink-0 overflow-hidden rounded-3xl border border-white/15 bg-white/5 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+                        className="shrink-0 pr-3 md:pr-5"
                       >
-                        <Image
-                          src={image}
-                          alt={`Accreditation screenshot ${index + 1}`}
-                          fill
-                          className="object-contain p-2"
-                        />
+                        <div className="overflow-hidden rounded-xl md:rounded-2xl border-2 border-[hsl(var(--foreground)/0.12)] bg-black shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+                          <Image
+                            src={image}
+                            alt={`Accreditation screenshot ${index + 1}`}
+                            width={600}
+                            height={150}
+                            className="h-20 sm:h-24 md:h-32 w-auto max-w-none"
+                          />
+                        </div>
                       </div>
                     ),
                   )}
                 </motion.div>
               </div>
             </motion.div>
-          </div>
-        </section>
+          </section>
 
-        {/* How It Works Section */}
-        <section className="py-16 md:py-28 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2
-                className="text-4xl font-bold mb-6 glitch-text-sm"
-                data-text="HOW IT WORKS"
-              >
-                HOW IT WORKS
-              </h2>
-              <p className="text-xl text-foreground/70 max-w-3xl mx-auto">
-                Empire of Bits combines retro arcade gaming
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              <motion.div
-                className="bg-background border-3 border-foreground p-8 relative retro-shadow"
-                whileHover={{ y: -8 }}
-                onMouseEnter={() => playSound("hover")}
-              >
-                <div className="absolute -top-6 -left-6 w-12 h-12 bg-[hsl(var(--accent-purple))] flex items-center justify-center text-2xl font-bold text-white">
-                  1
-                </div>
-                <Wallet className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
-                <h3 className="text-2xl font-bold mb-4">CONNECT WALLET</h3>
-                <p className="text-lg text-foreground/70">
-                  Connect your Solana wallet to unlock a world of retro gaming
-                  and digital rewards. Your wallet is the key to depositing
-                  funds, tracking your assets, and collecting your hard-earned
-                  winnings.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="bg-background border-3 border-foreground p-8 relative retro-shadow"
-                whileHover={{ y: -8 }}
-                onMouseEnter={() => playSound("hover")}
-              >
-                <div className="absolute -top-6 -left-6 w-12 h-12 bg-[hsl(var(--accent-purple))] flex items-center justify-center text-2xl font-bold text-white">
-                  2
-                </div>
-                <Gamepad2 className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
-                <h3 className="text-2xl font-bold mb-4">
-                  Choose Your Challenge
-                </h3>
-                <p className="text-lg text-foreground/70">
-                  Select from a lineup of classic arcade games. Place your bets,
-                  compete against other players, and have a the thrill of retro
-                  gaming.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="bg-background border-3 border-foreground p-8 relative retro-shadow"
-                whileHover={{ y: -8 }}
-                onMouseEnter={() => playSound("hover")}
-              >
-                <div className="absolute -top-6 -left-6 w-12 h-12 bg-[hsl(var(--accent-purple))] flex items-center justify-center text-2xl font-bold text-white">
-                  3
-                </div>
-                <Coins className="h-16 w-16 mb-6 text-[hsl(var(--accent-yellow))]" />
-                <h3 className="text-2xl font-bold mb-4">WIN POINTS</h3>
-                <p className="text-lg text-foreground/70">
-                  Win matches, top the leaderboards, and watch yourself grow
-                  with every victory.
-                </p>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Live Games Section */}
-        <section className="py-16 px-4 bg-gradient-to-b from-background to-[hsl(var(--accent-purple))/20] border-t-4 border-foreground">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-4xl font-bold mb-10 flex items-center">
-              <Users className="mr-3 h-8 w-8 text-[hsl(var(--accent-yellow))]" />
-              LIVE GAMES
-              <span className="ml-4 inline-flex h-4 w-4 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-              </span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2].map((stream) => (
-                <motion.div
-                  key={stream}
-                  className="bg-background border-3 border-foreground p-6 arcade-card"
-                  whileHover={{ scale: 1.03 }}
-                  onMouseEnter={() => playSound("hover")}
+          {/* How It Works Section */}
+          <section className="py-12 md:py-24 px-4">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-10 md:mb-16">
+                <h2
+                  className="font-pixel text-xl sm:text-2xl md:text-4xl mb-4 md:mb-6 glitch-text-sm isolate"
+                  data-text="HOW IT WORKS"
                 >
-                  <div className="bg-secondary h-72 mb-6 flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute top-3 right-3 bg-red-600 px-3 py-1.5 text-sm font-bold flex items-center text-white">
-                      <span className="mr-2 inline-flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                      </span>
-                      LIVE
-                    </div>
+                  HOW IT WORKS
+                </h2>
+                <p className="text-base sm:text-lg md:text-xl text-[hsl(var(--foreground)/0.7)] max-w-3xl mx-auto">
+                  Empire of Bits combines retro arcade gaming
+                </p>
+              </div>
 
-                    <Image
-                      src={
-                        stream === 1
-                          ? "/images/candyCrush.jpg"
-                          : "/images/chess.jpeg"
-                      }
-                      width={500}
-                      height={300}
-                      alt={stream === 1 ? "Candy Crush" : "Chess"}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+                {howItWorksSteps.map((step, index) => {
+                  const StepIcon = step.icon;
 
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-2xl font-bold flex items-center">
-                        {stream === 1 ? "CANDY CRUSH" : "CHESS"}
-                        {stream === 1 && (
-                          <span className="ml-3 inline-block px-2 py-1 bg-[hsl(var(--accent-green))] text-black text-sm font-bold">
-                            POPULAR
-                          </span>
-                        )}
-                      </h3>
-                      <p className="text-lg text-foreground/70 flex items-center mt-2">
-                        <Users className="h-4 w-4 mr-2" />
-                        {stream === 1 ? "Single Player" : "Two Player"}
-                      </p>
-                    </div>
-                    <a
-                      href="https://www.twitch.tv/empireofbits"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => playSound("click")}
+                  return (
+                    <motion.div
+                      key={step.title}
+                      className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-4 bg-[hsl(var(--background))] border-3 border-[hsl(var(--foreground))] p-5 sm:p-6 retro-shadow md:block md:p-8"
+                      whileHover={{ y: -8 }}
+                      onMouseEnter={() => playSound("hover")}
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ duration: 0.4, delay: index * 0.08 }}
                     >
-                      <AnimatedButton className="bg-[hsl(var(--accent-purple))] border-3 border-[hsl(var(--accent-purple)/0.7)] px-5 py-3 text-lg text-white">
-                        SPECTATE
-                      </AnimatedButton>
-                    </a>
-                  </div>
-                </motion.div>
-              ))}
+                      <div className="col-start-1 row-start-1 flex h-11 w-11 items-center justify-center bg-[hsl(var(--accent-purple))] font-pixel text-base text-white md:absolute md:-top-6 md:-left-6 md:h-12 md:w-12 md:text-lg">
+                        {index + 1}
+                      </div>
+                      <StepIcon className="col-start-3 row-start-1 h-9 w-9 text-[hsl(var(--accent-yellow))] md:mb-6 md:h-16 md:w-16" />
+                      <h3 className="col-start-2 row-start-1 font-pixel text-[13px] sm:text-sm uppercase leading-relaxed md:mb-4 md:text-lg">
+                        {step.title}
+                      </h3>
+                      <p className="col-span-3 text-[15px] sm:text-base md:text-lg leading-relaxed text-[hsl(var(--foreground)/0.7)]">
+                        {step.description}
+                      </p>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* CTA Section */}
-        <section className="py-16 md:py-28 px-4 text-center relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-background to-transparent"></div>
-            <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-background to-transparent"></div>
+          {/* Live Games Section */}
+          <section className="relative overflow-hidden border-t-4 border-[hsl(var(--foreground))] bg-zinc-950 px-4 py-12 text-white md:py-20">
+            <div
+              className="pointer-events-none absolute inset-0 landing-pixel-grid"
+              aria-hidden="true"
+            ></div>
+            <div
+              className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[40rem] max-w-[150vw] -translate-x-1/2 rounded-full bg-[hsl(var(--accent-purple)/0.35)] blur-3xl"
+              aria-hidden="true"
+            ></div>
 
-            {/* Animated particles */}
-            <div className="absolute inset-0">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-3 h-3 bg-foreground opacity-20 rotate-45"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    animation: `float ${
-                      3 + Math.random() * 7
-                    }s infinite linear`,
-                    animationDelay: `${Math.random() * 5}s`,
-                  }}
-                ></div>
-              ))}
-            </div>
-          </div>
-
-          <div className="max-w-5xl mx-auto relative">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="bg-background border-4 border-foreground p-10 md:p-16 retro-shadow"
-            >
-              <Sparkles className="h-16 w-16 mx-auto mb-8 text-[hsl(var(--accent-yellow))]" />
-
-              <h2
-                className="text-4xl md:text-5xl font-bold mb-8 glitch-text"
-                data-text="JOIN THE ARCADE REVOLUTION"
-              >
-                JOIN THE ARCADE REVOLUTION
+            <div className="relative max-w-7xl mx-auto">
+              <h2 className="font-pixel text-xl sm:text-2xl md:text-4xl mb-8 md:mb-12 flex items-center">
+                <Users className="mr-3 h-6 w-6 md:h-8 md:w-8 shrink-0 text-[hsl(var(--accent-yellow))]" />
+                LIVE GAMES
+                <span className="ml-4 inline-flex h-3 w-3 md:h-4 md:w-4 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4 bg-red-500"></span>
+                </span>
               </h2>
 
-              <p className="text-2xl text-foreground/80 mb-10 max-w-3xl mx-auto">
-                Experience the fusion of retro gaming. Play, compete, and earn
-                like never before.
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                {[1, 2].map((stream) => (
+                  <motion.div
+                    key={stream}
+                    className="group bg-zinc-900 border-3 border-white/90 p-3 sm:p-4 md:p-5 shadow-[6px_6px_0_0_hsl(var(--accent-purple))]"
+                    whileHover={{ scale: 1.03 }}
+                    onMouseEnter={() => playSound("hover")}
+                  >
+                    <div className="relative aspect-video mb-4 md:mb-5 overflow-hidden bg-black">
+                      <Image
+                        src={
+                          stream === 1
+                            ? "/images/candyCrush.jpg"
+                            : "/images/chess.jpeg"
+                        }
+                        width={500}
+                        height={300}
+                        alt={stream === 1 ? "Candy Crush" : "Chess"}
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
 
-              {!walletConnected ? (
-                <ParticleButton
-                  className="bg-[hsl(var(--accent-purple))] text-white px-12 py-5 text-2xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group"
-                  onHover={() => playSound("hover")}
-                  onClick={() => {
-                    setShowWalletModal(true);
-                    playSound("click");
-                  }}
-                >
-                  <span className="relative z-10 flex items-center">
-                    CONNECT WALLET TO START
-                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                      <div className="absolute top-3 left-3 bg-red-600 px-2.5 py-1 text-xs sm:text-sm font-bold flex items-center text-white">
+                        <span className="mr-2 inline-flex h-2 w-2 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                        </span>
+                        LIVE
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="font-pixel text-sm sm:text-base md:text-lg flex flex-wrap items-center gap-x-3 gap-y-2">
+                          {stream === 1 ? "CANDY CRUSH" : "CHESS"}
+                          {stream === 1 && (
+                            <span className="inline-block px-2 py-1 bg-[hsl(var(--accent-green))] text-black text-[11px] sm:text-xs font-bold tracking-wider">
+                              POPULAR
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-sm sm:text-base text-white/65 flex items-center mt-2">
+                          <Users className="h-4 w-4 mr-2" />
+                          {stream === 1 ? "Single Player" : "Two Player"}
+                        </p>
+                      </div>
+                      <a
+                        href="https://www.twitch.tv/empireofbits"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => playSound("click")}
+                        className="block shrink-0 sm:inline-block"
+                      >
+                        <AnimatedButton className="w-full sm:w-auto bg-[hsl(var(--accent-purple))] border-3 border-white px-6 py-3.5 text-xs sm:text-sm text-white shadow-[3px_3px_0_0_hsl(var(--accent-yellow))]">
+                          SPECTATE
+                        </AnimatedButton>
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="py-14 md:py-28 px-4 text-center relative overflow-hidden">
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+            >
+              <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-[hsl(var(--background))] to-transparent"></div>
+              <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-[hsl(var(--background))] to-transparent"></div>
+
+              {/* Animated particles */}
+              <div className="absolute inset-0">
+                {ctaParticles.map((particle, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 md:w-3 md:h-3 bg-[hsl(var(--foreground))] opacity-20 rotate-45"
+                    style={{
+                      top: `${particle.top}%`,
+                      left: `${particle.left}%`,
+                      animation: `float ${particle.duration}s infinite linear`,
+                      animationDelay: `${particle.delay}s`,
+                    }}
+                  ></div>
+                ))}
+              </div>
+            </div>
+
+            <div className="max-w-5xl mx-auto relative">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="relative overflow-hidden bg-[hsl(var(--accent-purple))] text-white border-3 md:border-4 border-[hsl(var(--foreground))] px-5 py-10 sm:p-10 md:p-16 shadow-[6px_6px_0_0_hsl(var(--foreground))] md:shadow-[10px_10px_0_0_hsl(var(--foreground))]"
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 landing-pixel-grid"
+                  aria-hidden="true"
+                ></div>
+                <div
+                  className="pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-[hsl(var(--accent-yellow)/0.35)] blur-3xl"
+                  aria-hidden="true"
+                ></div>
+                <div
+                  className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-fuchsia-400/30 blur-3xl"
+                  aria-hidden="true"
+                ></div>
+
+                <div className="relative">
+                  <Sparkles className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-6 md:mb-8 text-[hsl(var(--accent-yellow))]" />
+
+                  <h2
+                    className="font-pixel text-xl sm:text-3xl md:text-4xl leading-snug mb-5 md:mb-8 glitch-text isolate"
+                    data-text="JOIN THE ARCADE REVOLUTION"
+                  >
+                    JOIN THE ARCADE REVOLUTION
+                  </h2>
+
+                  <p className="text-base sm:text-xl md:text-2xl text-white/85 mb-8 md:mb-10 max-w-3xl mx-auto">
+                    Experience the fusion of retro gaming. Play, compete, and
+                    earn like never before.
+                  </p>
+
+                  {!walletConnected ? (
+                    <ParticleButton
+                      className="w-full sm:w-auto bg-[hsl(var(--accent-yellow))] text-black px-6 py-4 sm:px-10 sm:py-5 border-3 border-black shadow-[4px_4px_0_0_#000] relative overflow-hidden group"
+                      onHover={() => playSound("hover")}
+                      onClick={() => {
+                        setShowWalletModal(true);
+                        playSound("click");
+                      }}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-3 font-pixel text-[11px] sm:text-sm leading-relaxed text-balance">
+                        CONNECT WALLET TO START
+                        <ArrowRight className="h-5 w-5 shrink-0 group-hover:translate-x-2 transition-transform" />
+                      </span>
+                    </ParticleButton>
+                  ) : (
+                    <Link href="/games" className="block sm:inline-block">
+                      <ParticleButton
+                        className="w-full sm:w-auto bg-[hsl(var(--accent-yellow))] text-black px-6 py-4 sm:px-10 sm:py-5 border-3 border-black shadow-[4px_4px_0_0_#000] relative overflow-hidden group"
+                        onHover={() => playSound("hover")}
+                        onClick={() => playSound("click")}
+                      >
+                        <span className="relative z-10 flex items-center justify-center gap-3 font-pixel text-[11px] sm:text-sm leading-relaxed">
+                          START PLAYING NOW
+                          <ArrowRight className="h-5 w-5 shrink-0 group-hover:translate-x-2 transition-transform" />
+                        </span>
+                      </ParticleButton>
+                    </Link>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        </main>
+
+        {/* Footer */}
+        <footer className="relative z-10 bg-[hsl(var(--background))] border-t-4 border-[hsl(var(--foreground))] px-4 pt-12 pb-32 md:pt-16 md:pb-12">
+          <div className="max-w-7xl mx-auto grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 md:gap-10">
+            <div className="col-span-2">
+              <div className="flex items-center gap-3 mb-5 md:mb-6">
+                <div className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--accent-purple))] text-white shadow-[3px_3px_0_0_hsl(var(--foreground))]">
+                  <Gamepad2 className="h-6 w-6 md:h-7 md:w-7" />
+                </div>
+                <h3 className="font-pixel text-base sm:text-xl md:text-2xl">
+                  <span className="font-pixel">EMPIRE</span>{" "}
+                  <span className="font-pixel text-[hsl(var(--accent-yellow))] [text-shadow:2px_2px_0_hsl(var(--foreground))]">
+                    OF
+                  </span>{" "}
+                  <span className="font-pixel text-[hsl(var(--accent-purple))]">
+                    BITS
                   </span>
-                </ParticleButton>
-              ) : (
-                <Link href="/games">
-                  <ParticleButton
-                    className="bg-[hsl(var(--accent-purple))] text-white px-12 py-5 text-2xl font-bold border-4 border-[hsl(var(--accent-purple)/0.7)] relative overflow-hidden group"
-                    onHover={() => playSound("hover")}
+                </h3>
+              </div>
+              <p className="text-base md:text-lg text-[hsl(var(--foreground)/0.7)] mb-6 md:mb-8 max-w-md">
+                The ultimate Empire of bits arcade gaming platform. Compete in
+                retro-style games, bet points, and win big in tournaments.
+              </p>
+              <div className="flex gap-3 md:gap-4">
+                <motion.a
+                  href="https://x.com/empireofbits"
+                  className="w-11 h-11 md:w-12 md:h-12 border-3 border-[hsl(var(--foreground))] flex items-center justify-center hover:border-[hsl(var(--accent-purple))] hover:text-[hsl(var(--accent-purple))] transition-colors arcade-btn-large"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onMouseEnter={() => playSound("hover")}
+                  onClick={() => playSound("click")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Follow Empire of Bits on X (Twitter)"
+                >
+                  <svg
+                    className="h-6 w-6"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                  </svg>
+                </motion.a>
+                <motion.a
+                  href="https://github.com/kunalcode12/Empire-of-bits-vorld"
+                  className="w-11 h-11 md:w-12 md:h-12 border-3 border-[hsl(var(--foreground))] flex items-center justify-center hover:border-[hsl(var(--accent-purple))] hover:text-[hsl(var(--accent-purple))] transition-colors arcade-btn-large"
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onMouseEnter={() => playSound("hover")}
+                  onClick={() => playSound("click")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View Empire of Bits on GitHub"
+                >
+                  <svg
+                    className="h-6 w-6"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.111.82-.261.82-.58 0-.287-.01-1.044-.016-2.05-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.73.083-.73 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.468-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 013.004-.404c1.02.004 2.047.138 3.004.404 2.29-1.552 3.296-1.23 3.296-1.23.655 1.653.243 2.874.12 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.604-.015 2.896-.015 3.289 0 .322.216.697.825.579C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12z" />
+                  </svg>
+                </motion.a>
+              </div>
+            </div>
+
+            <div className="md:pt-2">
+              <h3 className="font-pixel text-[10px] md:text-xs mb-4 md:mb-6 border-b-2 border-[hsl(var(--foreground)/0.15)] pb-3">
+                NAVIGATION
+              </h3>
+              <ul className="space-y-1.5 md:space-y-3">
+                <li>
+                  <Link
+                    href="/"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/games"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleProtectedNavigation("/games");
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Games
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/coming-soon"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Tournaments
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/points-exchange"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleProtectedNavigation("/points-exchange");
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Points Exchange
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/profile"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleProtectedNavigation("/profile");
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Profile
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div className="md:pt-2">
+              <h3 className="font-pixel text-[10px] md:text-xs mb-4 md:mb-6 border-b-2 border-[hsl(var(--foreground)/0.15)] pb-3">
+                LEGAL
+              </h3>
+              <ul className="space-y-1.5 md:space-y-3">
+                <li>
+                  <Link
+                    href="/terms-of-use"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
                     onClick={() => playSound("click")}
                   >
-                    <span className="relative z-10 flex items-center">
-                      START PLAYING NOW
-                      <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
-                    </span>
-                  </ParticleButton>
-                </Link>
-              )}
-            </motion.div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-background border-t-4 border-foreground py-16 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div className="md:col-span-2">
-            <div className="flex items-center mb-6">
-              <Gamepad2 className="h-10 w-10 mr-3 text-foreground" />
-              <h3 className="text-3xl font-bold tracking-tight">
-                <span className="inline-block">EMPIRE</span>
-                <span className="inline-block text-[hsl(var(--accent-yellow))]">
-                  {" "}
-                  OF{" "}
-                </span>
-                <span className="inline-block text-[hsl(var(--accent-purple))]">
-                  BITS
-                </span>
-              </h3>
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Terms of Use
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy-policy"
+                    className="group flex items-center py-1 text-[15px] md:text-base text-[hsl(var(--foreground)/0.65)] hover:text-[hsl(var(--foreground))] transition-colors"
+                    onMouseEnter={() => playSound("hover")}
+                    onClick={() => playSound("click")}
+                  >
+                    <ChevronRight className="h-4 w-4 mr-1.5 shrink-0 text-[hsl(var(--accent-purple))] opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    Privacy Policy
+                  </Link>
+                </li>
+              </ul>
             </div>
-            <p className="text-xl text-foreground/70 mb-8">
-              The ultimate Empire of bits arcade gaming platform. Compete in
-              retro-style games, bet points, and win big in tournaments.
+          </div>
+
+          <div className="max-w-7xl mx-auto mt-10 md:mt-14 pt-6 md:pt-8 border-t-2 border-[hsl(var(--foreground)/0.12)] text-center">
+            <p className="text-sm md:text-base text-[hsl(var(--foreground)/0.55)]">
+              &copy; {new Date().getFullYear()} Empire of Bits. All rights
+              reserved.
             </p>
-            <div className="flex space-x-5">
-              <motion.a
-                href="https://x.com/empireofbits"
-                className="w-12 h-12 border-3 border-foreground flex items-center justify-center hover:border-[hsl(var(--accent-yellow))] transition-colors arcade-btn-large"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                onMouseEnter={() => playSound("hover")}
-                onClick={() => playSound("click")}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow Empire of Bits on X (Twitter)"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-              </motion.a>
-              <motion.a
-                href="https://github.com/kunalcode12/Empire-of-bits-vorld"
-                className="w-12 h-12 border-3 border-foreground flex items-center justify-center hover:border-[hsl(var(--accent-yellow))] transition-colors arcade-btn-large"
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                whileTap={{ scale: 0.95 }}
-                onMouseEnter={() => playSound("hover")}
-                onClick={() => playSound("click")}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="View Empire of Bits on GitHub"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.111.82-.261.82-.58 0-.287-.01-1.044-.016-2.05-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.73.083-.73 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.468-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 013.004-.404c1.02.004 2.047.138 3.004.404 2.29-1.552 3.296-1.23 3.296-1.23.655 1.653.243 2.874.12 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.604-.015 2.896-.015 3.289 0 .322.216.697.825.579C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12z" />
-                </svg>
-              </motion.a>
-            </div>
           </div>
+        </footer>
 
-          <div className="mt-6 md:mt-8">
-            <h3 className="text-xl font-bold mb-6 border-b-2 border-gray-800 pb-3">
-              NAVIGATION
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  href="/"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/games"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleProtectedNavigation("/games");
+        {/* Sticky mobile action bar */}
+        <AnimatePresence>
+          {scrolled && (
+            <motion.div
+              className="fixed inset-x-0 bottom-0 z-30 px-3 pb-3 md:hidden"
+              style={{
+                paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+              }}
+              initial={{ y: "120%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "120%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 34 }}
+            >
+              <div className="flex items-center gap-2 border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--background)/0.92)] p-2 shadow-[4px_4px_0_0_hsl(var(--foreground))] backdrop-blur-md">
+                {!walletConnected && (
+                  <button
+                    type="button"
+                    aria-label="Connect wallet"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--accent-yellow))] text-black active:translate-y-0.5"
+                    onClick={() => {
+                      setShowWalletModal(true);
+                      playSound("click");
+                    }}
+                  >
+                    <Wallet className="h-5 w-5" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 border-3 border-[hsl(var(--foreground))] bg-[hsl(var(--accent-purple))] text-white active:translate-y-0.5"
+                  onClick={() => {
+                    playSound("click");
+                    handlePlayGamesClick();
                   }}
                 >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Games
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/coming-soon"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Tournaments
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/points-exchange"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleProtectedNavigation("/points-exchange");
-                  }}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Points Exchange
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/profile"
-                  className="text-lg text-gray-400 hover:text-white transition-colors flex items-center"
-                  onMouseEnter={() => playSound("hover")}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleProtectedNavigation("/profile");
-                  }}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Profile
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mt-6 md:mt-8">
-            <h3 className="text-xl font-bold mb-6 border-b-2 border-gray-800 pb-3">
-              LEGAL
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  href="/terms-of-use"
-                  className="text-lg text-foreground/60 hover:text-foreground transition-colors flex items-center group"
-                  onMouseEnter={() => playSound("hover")}
-                  onClick={() => playSound("click")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Terms of Use
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy-policy"
-                  className="text-lg text-foreground/60 hover:text-foreground transition-colors flex items-center group"
-                  onMouseEnter={() => playSound("hover")}
-                  onClick={() => playSound("click")}
-                >
-                  <ChevronRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t-2 border-gray-800 text-center">
-          <p className="text-lg mb-3 text-gray-500">
-            &copy; {new Date().getFullYear()} Empire of Bits. All rights
-            reserved.
-          </p>
-        </div>
-      </footer>
+                  <span className="font-pixel text-[11px]">PLAY GAMES</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </MotionConfig>
     </div>
   );
 }

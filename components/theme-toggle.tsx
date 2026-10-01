@@ -31,7 +31,7 @@ export function ThemeToggle() {
         variant="outline"
         size="icon"
         onClick={() => setTheme(isDark ? "light" : "dark")}
-        className="relative h-12 w-12 rounded-full border-3 border-current overflow-hidden p-0"
+        className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full border-3 border-current overflow-hidden p-0"
         aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       >
         {/* Animated background */}
